@@ -1,6 +1,7 @@
 #[macro_use]
 extern crate clap;
 use clap::App;
+mod db;
 
 fn main() {
     let yaml = load_yaml!("cli.yml");
