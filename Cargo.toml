@@ -8,5 +8,6 @@ edition = "2018"
 
 [dependencies]
 clap = {version = "2.31", features = ["yaml"]}
-diesel = { version = "1.4.0", features = ["sqlite"] }
+diesel = { version = "1.4.0", features = ["postgres", "uuidv07"] }
 dotenv = "0.10"
+uuid = "0.7"
