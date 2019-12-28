@@ -5,6 +5,8 @@ table! {
         doctype -> Text,
         version -> Int4,
         doc -> Jsonb,
+        created_at -> Timestamptz,
+        updated_at -> Timestamptz,
     }
 }
 
