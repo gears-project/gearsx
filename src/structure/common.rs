@@ -3,13 +3,12 @@ use serde_json;
 use serde_yaml;
 use uuid::Uuid;
 
+#[derive(Queryable)]
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct Document<T> {
     pub id: Uuid,
     pub name: String,
     pub doctype: String,
-    pub doctype_version: i32,
-    pub version: i32,
     pub body: T,
 }
 
@@ -35,8 +34,6 @@ where
             id: header.id.clone(),
             name: header.name.clone(),
             doctype: header.doctype.clone(),
-            doctype_version: header.doctype_version.clone(),
-            version: header.version.clone(),
             body: <T>::default(),
         }
     }
@@ -46,8 +43,6 @@ where
             id: self.id.clone(),
             name: self.name.clone(),
             doctype: self.doctype.clone(),
-            doctype_version: self.doctype_version.clone(),
-            version: self.version.clone(),
         }
     }
 
@@ -55,8 +50,6 @@ where
         self.id = header.id.clone();
         self.name = header.name.clone();
         self.doctype = header.doctype.clone();
-        self.doctype_version = header.doctype_version.clone();
-        self.version = header.version.clone();
     }
 
     /// Return a string representation of the Document
@@ -147,8 +140,6 @@ where
             id: Uuid::new_v4(),
             name: "default".to_owned(),
             doctype: "".to_owned(),
-            doctype_version: 1,
-            version: 1,
             body: <T>::default(),
         }
     }
@@ -164,8 +155,6 @@ pub struct DocumentHeader {
     pub id: Uuid,
     pub name: String,
     pub doctype: String,
-    pub doctype_version: i32,
-    pub version: i32,
 }
 
 impl DocumentHeader {

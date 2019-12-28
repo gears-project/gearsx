@@ -2,9 +2,9 @@ table! {
     documents (id) {
         id -> Uuid,
         project_id -> Uuid,
+        name -> Text,
         doctype -> Text,
-        version -> Int4,
-        doc -> Jsonb,
+        body -> Jsonb,
         created_at -> Timestamptz,
         updated_at -> Timestamptz,
     }
