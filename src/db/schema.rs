@@ -5,16 +5,14 @@ table! {
         name -> Text,
         doctype -> Text,
         body -> Jsonb,
-        created_at -> Timestamptz,
-        updated_at -> Timestamptz,
     }
 }
 
 table! {
     projects (id) {
         id -> Uuid,
-        name -> Nullable<Text>,
-        description -> Nullable<Text>,
+        name -> Text,
+        description -> Text,
     }
 }
 

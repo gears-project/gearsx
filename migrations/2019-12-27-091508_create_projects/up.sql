@@ -1,6 +1,6 @@
 CREATE TABLE projects (
   id UUID PRIMARY KEY NOT NULL,
-  name TEXT,
-  description TEXT
+  name TEXT NOT NULL,
+  description TEXT NOT NULL
 );
 
