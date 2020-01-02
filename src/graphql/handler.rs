@@ -5,9 +5,8 @@ use juniper::http::graphiql::graphiql_source;
 use juniper::http::GraphQLRequest;
 
 use crate::db::connection::Pool;
-// use crate::schemas::root::{create_schema, Context, Schema};
+use crate::graphql::schema::{create_schema, Context, Schema};
 
-/*
 pub async fn graphql(
     pool: web::Data<Pool>,
     schema: web::Data<Arc<Schema>>,
@@ -27,7 +26,6 @@ pub async fn graphql(
         .content_type("application/json")
         .body(res))
 }
-*/
 
 pub async fn graphql_playground() -> HttpResponse {
     HttpResponse::Ok()
@@ -36,10 +34,10 @@ pub async fn graphql_playground() -> HttpResponse {
 }
 
 pub fn register(config: &mut web::ServiceConfig) {
-    // let schema = std::sync::Arc::new(create_schema());
+    let schema = std::sync::Arc::new(create_schema());
     config
-        // .data(schema)
-        // .route("/graphql", web::post().to(graphql))
+        .data(schema)
+        .route("/graphql", web::post().to(graphql))
         .route("/graphiql", web::get().to(graphql_playground));
 }
 

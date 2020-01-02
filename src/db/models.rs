@@ -7,6 +7,7 @@ use crate::diesel::RunQueryDsl;
 use uuid::Uuid;
 use serde_json;
 
+#[derive(GraphQLObject)]
 #[derive(Serialize, Deserialize, Debug)]
 #[derive(AsChangeset, Queryable, Insertable)]
 #[table_name="projects"]
@@ -47,6 +48,12 @@ impl Project {
         projects::table.find(id)
             .first::<Project>(conn)
     }
+
+    pub fn find(conn: &PgConnection) -> Result<Vec<Project>, DieselError> {
+        projects::table
+            .load::<Project>(conn)
+    }
+
 
 /*
     pub fn delete(id: &str, connection: &PgConnection) -> Result<(), DieselError> {
