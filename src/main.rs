@@ -8,6 +8,9 @@ extern crate serde_json;
 extern crate serde_yaml;
 
 #[macro_use]
+extern crate juniper;
+
+#[macro_use]
 extern crate diesel;
 extern crate dotenv;
 

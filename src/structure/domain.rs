@@ -2,12 +2,14 @@ use super::common::{Document, DocumentReference};
 
 pub type DomainDocument = Document<Domain>;
 
+#[derive(GraphQLObject)]
 #[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub struct Domain {
     pub events: Events,
     pub entities: Entities,
 }
 
+#[derive(GraphQLObject)]
 #[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub struct Events {
     pub change: Vec<DocumentReference>,
@@ -22,12 +24,14 @@ pub type Attributes = Vec<Attribute>;
 pub type References = Vec<Reference>;
 pub type Validations = Vec<Validation>;
 
+#[derive(GraphQLObject)]
 #[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub struct Validation {
     pub message: String,
     pub xflow: DocumentReference,
 }
 
+#[derive(GraphQLObject)]
 #[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub struct Attribute {
     pub name: String,
@@ -36,6 +40,7 @@ pub struct Attribute {
     pub validations: Vec<Validation>,
 }
 
+#[derive(GraphQLEnum)]
 #[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub enum ReferenceType {
     #[serde(rename = "has_many")]
@@ -44,6 +49,7 @@ pub enum ReferenceType {
     BelongsTo,
 }
 
+#[derive(GraphQLObject)]
 #[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub struct Reference {
     pub name: String,
@@ -51,6 +57,7 @@ pub struct Reference {
     pub other: String,
 }
 
+#[derive(GraphQLObject)]
 #[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub struct Entity {
     pub name: String,

@@ -14,6 +14,7 @@ pub struct Document<T> {
 
 pub type DocumentList<T> = Vec<Document<T>>;
 
+#[derive(GraphQLObject)]
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct DocumentReference {
     pub id: Uuid,
