@@ -26,7 +26,8 @@ pub struct MutationRoot;
 
 #[derive(juniper::GraphQLInputObject)]
 pub struct ProjectInput {
-    name: String
+    name: String,
+    description: Option<String>,
 }
 
 #[juniper::object(Context = Context)]

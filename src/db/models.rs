@@ -54,7 +54,6 @@ impl Project {
             .load::<Project>(conn)
     }
 
-
 /*
     pub fn delete(id: &str, connection: &PgConnection) -> Result<(), DieselError> {
         diesel::delete(projects::table.find(id))
@@ -83,9 +82,9 @@ impl Document {
 
     }
 
-    pub fn by_id(id: &Uuid, conn: &PgConnection) -> Result<Project, DieselError> {
-        projects::table.find(id)
-            .first::<Project>(conn)
+    pub fn by_id(id: &Uuid, conn: &PgConnection) -> Result<Document, DieselError> {
+        documents::table.find(id)
+            .first::<Document>(conn)
     }
 
 /*
