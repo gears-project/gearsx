@@ -1,0 +1,51 @@
+@startuml Overview
+
+skinparam rectangleStyle uml2
+
+actor Developer
+rectangle Studio
+
+interface Query
+interface Command
+
+rectangle DataModel
+database "Model Storage DB" as ModelStorage
+database "Model Storage git" as ModelStorageGit
+
+interface Exporter
+
+rectangle "App Generator" {
+  rectangle "React Generator" as ReactGenerator
+  rectangle "App\nData Model" as DataModelGenerator
+  rectangle "Fn Generator" as FnGenerator
+  interface "App Builder" as AppBuilder
+}
+
+
+database "Project git repo" as GitRepo
+
+Developer -down-> Studio
+Studio -down-> Query
+Studio -down-> Command
+
+Query -down-> DataModel
+Command -down-> DataModel
+
+DataModel -right-> ModelStorage
+DataModel -left-> ModelStorageGit
+
+DataModel -down-> Exporter
+
+Exporter -down-> ReactGenerator
+Exporter -down-> FnGenerator
+Exporter -down-> DataModelGenerator
+
+ReactGenerator -down-> AppBuilder
+FnGenerator -down-> AppBuilder
+
+DataModelGenerator -right-> ReactGenerator
+DataModelGenerator -left-> FnGenerator
+
+AppBuilder -down-> GitRepo
+
+@enduml

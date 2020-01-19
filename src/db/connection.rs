@@ -1,12 +1,12 @@
-use diesel::prelude::*;
-use dotenv::dotenv;
-use std::env;
-
 use diesel::{r2d2::ConnectionManager, PgConnection};
 
 pub type Pool = r2d2::Pool<ConnectionManager<PgConnection>>;
 
 /*
+use diesel::prelude::*;
+use dotenv::dotenv;
+use std::env;
+
 pub fn establish_connection() -> PgConnection {
     dotenv().ok();
 

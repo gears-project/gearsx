@@ -1,9 +1,10 @@
 use super::schema::{projects, documents};
-use crate::structure::domain::DomainDocument;
+use crate::structure::domain::{Domain, DomainDocument};
 use diesel::pg::PgConnection;
 use diesel::result::Error as DieselError;
 use crate::diesel::QueryDsl;
 use crate::diesel::RunQueryDsl;
+use crate::diesel::ExpressionMethods;
 use uuid::Uuid;
 use serde_json;
 
@@ -63,18 +64,72 @@ impl Project {
 */
 }
 
+pub enum GearsDocument {
+    Domain(DomainDocument)
+}
+
+/*
+pub trait Docco {
+    fn as_domain(&self) -> Option<&DomainDocument> { None }
+}
+
+impl Docco for  Document {
+
+    fn as_domain(&self) -> Option<&DomainDocument> {
+        match &self.doctype.as_str() {
+            &"domain" => {
+                Some(&DomainDocument {
+                    id: self.id,
+                    doctype: self.doctype,
+                    name: self.name,
+                    body: serde_json::from_value::<Domain>(self.body).unwrap()
+                })
+            },
+            _ => None
+        }
+    }
+}
+*/
+
 impl Document {
+
+    /*
+    pub fn as_domain(&self) -> Result<DomainDocument, String> {
+        match &self.doctype.as_str() {
+            &"domain" => {
+                Ok(DomainDocument {
+                    id: self.id,
+                    doctype: self.doctype,
+                    name: self.name,
+                    body: serde_json::from_value::<Domain>(self.body).unwrap()
+                })
+            },
+            _ => Err("Not a domain document".to_owned()),
+        }
+
+    }
+
+    pub fn concrete(&self) -> Option<GearsDocument> {
+        match &self.doctype.as_str() {
+            &"domain" => {
+                Some(GearsDocument::Domain(self.as_domain().unwrap()))
+            },
+            _ => None,
+        }
+    }
+    */
+
     pub fn create(project_id: &Uuid, name: &str, conn: &PgConnection) -> Result<Self, DieselError> {
 
         let doc = DomainDocument::default();
 
-	let record = Self {
-	    id: doc.id,
-	    project_id: project_id.to_owned(),
-	    name: name.to_owned(),
-            doctype: "domain".to_owned(),
-            body: serde_json::to_value(doc.body).unwrap(),
-	};
+        let record = Self {
+            id: doc.id,
+            project_id: project_id.to_owned(),
+            name: name.to_owned(),
+                doctype: "domain".to_owned(),
+                body: serde_json::to_value(doc.body).unwrap(),
+        };
 
         diesel::insert_into(documents::table)
             .values(record)
@@ -87,6 +142,22 @@ impl Document {
             .first::<Document>(conn)
     }
 
+    /*
+    pub fn find_domains(conn: &PgConnection) -> Result<Vec<DomainDocument>, DieselError> {
+        Ok(documents::table
+            .filter(documents::doctype.eq(&"domain"))
+            .load::<Document>(conn)
+            .unwrap()
+            .iter()
+            .map(|&res| {
+                res.as_domain().unwrap()
+            })
+            .collect()
+        )
+            
+    }
+    */
+
 /*
     pub fn delete(id: &str, connection: &PgConnection) -> Result<(), DieselError> {
         diesel::delete(projects::table.find(id))
@@ -95,4 +166,14 @@ impl Document {
     }
 */
 }
+
+/*
+juniper::graphql_union!(<'a> &'a Docco: () as "Document" where Scalar = <S> |&self| { 
+    instance_resolvers: |_| {
+        // The left hand side indicates the concrete type T, the right hand
+        // side should be an expression returning Option<T>
+        &DomainDocument => self.as_domain(),
+    }
+});
+*/
 
