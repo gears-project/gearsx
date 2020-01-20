@@ -2,7 +2,8 @@ use juniper;
 use juniper::{FieldResult, RootNode};
 
 use crate::db::connection::Pool;
-use crate::db::models::{Project};
+use crate::db::models::{Project, Document};
+use crate::structure::domain::DomainDocument;
 
 
 pub struct Context {
@@ -27,14 +28,12 @@ impl QueryRoot {
         Ok(projects)
     }
 
-    /*
     #[graphql(description = "List of all domain documents")]
     fn domains(context: &Context) -> FieldResult<Vec<DomainDocument>> {
         let mut conn = context.dbpool.get().unwrap();
         let documents = Document::find_domains(&conn).unwrap();
         Ok(documents)
     }
-    */
 }
 
 pub struct MutationRoot;

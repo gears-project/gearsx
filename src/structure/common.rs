@@ -1,4 +1,3 @@
-use juniper::GraphQLType;
 use serde;
 use serde_json;
 use serde_yaml;
@@ -6,7 +5,7 @@ use uuid::Uuid;
 
 #[derive(Queryable)]
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
-pub struct Document<T : GraphQLType> {
+pub struct Document<T> {
     pub id: Uuid,
     pub name: String,
     pub doctype: String,
@@ -29,7 +28,7 @@ pub enum ModelLoadError {
 
 impl<T> Document<T>
 where
-    T: serde::Serialize + serde::de::DeserializeOwned + Eq + Default + GraphQLType
+    T: serde::Serialize + serde::de::DeserializeOwned + Eq + Default
 {
     pub fn new_from_header(header: &DocumentHeader) -> Self {
         Self {
@@ -135,7 +134,7 @@ where
 
 impl<T> Default for Document<T>
 where
-    T: Default + GraphQLType,
+    T: Default,
 {
     fn default() -> Self {
         Self {

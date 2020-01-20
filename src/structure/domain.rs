@@ -1,6 +1,26 @@
+use uuid::Uuid;
 use super::common::{Document, DocumentReference};
 
 pub type DomainDocument = Document<Domain>;
+
+graphql_object!(DomainDocument: () |&self| {
+    field name() -> &str {
+        self.name.as_str()
+    }
+
+    field doctype() -> &str {
+        self.doctype.as_str()
+    }
+
+    field id() -> Uuid {
+        self.id
+    }
+
+    field body() -> Domain {
+        self.body.clone()
+    }
+});
+
 
 #[derive(GraphQLObject)]
 #[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
