@@ -1,5 +1,5 @@
 use super::schema::{projects, documents};
-use crate::structure::domain::{DomainDocument};
+use crate::structure::domain::{Domain, DomainDocument};
 use diesel::pg::PgConnection;
 use diesel::result::Error as DieselError;
 use crate::diesel::QueryDsl;
@@ -93,15 +93,14 @@ impl Docco for  Document {
 
 impl Document {
 
-    /*
     pub fn as_domain(&self) -> Result<DomainDocument, String> {
         match &self.doctype.as_str() {
             &"domain" => {
                 Ok(DomainDocument {
                     id: self.id,
-                    doctype: self.doctype,
-                    name: self.name,
-                    body: serde_json::from_value::<Domain>(self.body).unwrap()
+                    doctype: self.doctype.clone(),
+                    name: self.name.clone(),
+                    body: serde_json::from_value::<Domain>(self.body.clone()).unwrap()
                 })
             },
             _ => Err("Not a domain document".to_owned()),
@@ -117,7 +116,6 @@ impl Document {
             _ => None,
         }
     }
-    */
 
     pub fn create(project_id: &Uuid, name: &str, conn: &PgConnection) -> Result<Self, DieselError> {
 
@@ -142,21 +140,19 @@ impl Document {
             .first::<Document>(conn)
     }
 
-    /*
     pub fn find_domains(conn: &PgConnection) -> Result<Vec<DomainDocument>, DieselError> {
         Ok(documents::table
             .filter(documents::doctype.eq(&"domain"))
             .load::<Document>(conn)
             .unwrap()
             .iter()
-            .map(|&res| {
+            .map(|res| {
                 res.as_domain().unwrap()
             })
             .collect()
         )
             
     }
-    */
 
 /*
     pub fn delete(id: &str, connection: &PgConnection) -> Result<(), DieselError> {
