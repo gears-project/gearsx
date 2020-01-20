@@ -2,8 +2,8 @@ use juniper;
 use juniper::{FieldResult, RootNode};
 
 use crate::db::connection::Pool;
-use crate::db::models::{Project, Document};
-use crate::structure::domain::DomainDocument;
+use crate::db::models::{Project};
+
 
 pub struct Context {
     pub dbpool: Pool,

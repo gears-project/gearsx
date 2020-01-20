@@ -1,5 +1,5 @@
 use super::schema::{projects, documents};
-use crate::structure::domain::{Domain, DomainDocument};
+use crate::structure::domain::{DomainDocument};
 use diesel::pg::PgConnection;
 use diesel::result::Error as DieselError;
 use crate::diesel::QueryDsl;

@@ -8,7 +8,7 @@ rectangle Studio
 interface Query
 interface Command
 
-rectangle DataModel
+rectangle "Model" as DataModel
 database "Model Storage DB" as ModelStorage
 database "Model Storage git" as ModelStorageGit
 

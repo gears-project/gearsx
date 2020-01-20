@@ -27,7 +27,7 @@ async fn main() -> std::io::Result<()> {
     env_logger::init();
 
     let yaml = load_yaml!("cli.yml");
-    let matches = clap::App::from(yaml).get_matches();
+    let _matches = clap::App::from(yaml).get_matches();
 
     let pool = db::connection::get_connection_pool();
 
