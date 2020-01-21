@@ -3,6 +3,7 @@ CREATE TABLE documents (
   project_id UUID REFERENCES projects(id) NOT NULL,
   name TEXT NOT NULL,
   doctype TEXT NOT NULL,
+  version INTEGER NOT NULL,
   body jsonb NOT NULL
 );
 

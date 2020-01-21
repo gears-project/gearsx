@@ -4,6 +4,7 @@ table! {
         project_id -> Uuid,
         name -> Text,
         doctype -> Text,
+        version -> Int4,
         body -> Jsonb,
     }
 }

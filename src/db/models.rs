@@ -26,6 +26,7 @@ pub struct Document {
     pub project_id: Uuid,
     pub name: String,
     pub doctype: String,
+    pub version: i32,
     pub body: serde_json::Value,
 }
 
@@ -68,29 +69,6 @@ pub enum GearsDocument {
     Domain(DomainDocument)
 }
 
-/*
-pub trait Docco {
-    fn as_domain(&self) -> Option<&DomainDocument> { None }
-}
-
-impl Docco for  Document {
-
-    fn as_domain(&self) -> Option<&DomainDocument> {
-        match &self.doctype.as_str() {
-            &"domain" => {
-                Some(&DomainDocument {
-                    id: self.id,
-                    doctype: self.doctype,
-                    name: self.name,
-                    body: serde_json::from_value::<Domain>(self.body).unwrap()
-                })
-            },
-            _ => None
-        }
-    }
-}
-*/
-
 impl Document {
 
     pub fn as_domain(&self) -> Result<DomainDocument, String> {
@@ -100,12 +78,12 @@ impl Document {
                     id: self.id,
                     doctype: self.doctype.clone(),
                     name: self.name.clone(),
+                    version: self.version.clone(),
                     body: serde_json::from_value::<Domain>(self.body.clone()).unwrap()
                 })
             },
             _ => Err("Not a domain document".to_owned()),
         }
-
     }
 
     pub fn concrete(&self) -> Option<GearsDocument> {
@@ -124,9 +102,10 @@ impl Document {
         let record = Self {
             id: doc.id,
             project_id: project_id.to_owned(),
+            version: 0,
             name: name.to_owned(),
-                doctype: "domain".to_owned(),
-                body: serde_json::to_value(doc.body).unwrap(),
+            doctype: "domain".to_owned(),
+            body: serde_json::to_value(doc.body).unwrap(),
         };
 
         diesel::insert_into(documents::table)

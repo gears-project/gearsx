@@ -9,6 +9,7 @@ pub struct Document<T> {
     pub id: Uuid,
     pub name: String,
     pub doctype: String,
+    pub version: i32,
     pub body: T,
 }
 
@@ -35,6 +36,7 @@ where
             id: header.id.clone(),
             name: header.name.clone(),
             doctype: header.doctype.clone(),
+            version: header.version.clone(),
             body: <T>::default(),
         }
     }
@@ -44,6 +46,7 @@ where
             id: self.id.clone(),
             name: self.name.clone(),
             doctype: self.doctype.clone(),
+            version: self.version.clone(),
         }
     }
 
@@ -51,6 +54,7 @@ where
         self.id = header.id.clone();
         self.name = header.name.clone();
         self.doctype = header.doctype.clone();
+        self.version = header.version.clone();
     }
 
     /// Return a string representation of the Document
@@ -130,6 +134,11 @@ where
         Ok(self)
     }
 
+    pub fn change(&mut self) -> i32 {
+        self.version = self.version + 1;
+        self.version
+    }
+
 }
 
 impl<T> Default for Document<T>
@@ -140,7 +149,8 @@ where
         Self {
             id: Uuid::new_v4(),
             name: "default".to_owned(),
-            doctype: "".to_owned(),
+            doctype: "none".to_owned(),
+            version: 0,
             body: <T>::default(),
         }
     }
@@ -156,6 +166,7 @@ pub struct DocumentHeader {
     pub id: Uuid,
     pub name: String,
     pub doctype: String,
+    pub version: i32,
 }
 
 impl DocumentHeader {

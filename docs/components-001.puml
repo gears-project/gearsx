@@ -9,8 +9,12 @@ interface Query
 interface Command
 
 rectangle "Model" as DataModel
-database "Model Storage DB" as ModelStorage
-database "Model Storage git" as ModelStorageGit
+rectangle "pgdb::" {
+  database "Model Storage DB" as ModelStorage
+}
+rectangle "git::" {
+  database "Model Storage git" as ModelStorageGit
+}
 
 interface Exporter
 
@@ -21,7 +25,6 @@ rectangle "App Generator" {
   interface "App Builder" as AppBuilder
 }
 
-
 database "Project git repo" as GitRepo
 
 Developer -down-> Studio
@@ -31,8 +34,8 @@ Studio -down-> Command
 Query -down-> DataModel
 Command -down-> DataModel
 
-DataModel -right-> ModelStorage
-DataModel -left-> ModelStorageGit
+DataModel -left-> ModelStorage
+DataModel -right-> ModelStorageGit
 
 DataModel -down-> Exporter
 
