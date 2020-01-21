@@ -3,24 +3,26 @@ use super::common::{Document, DocumentReference};
 
 pub type DomainDocument = Document<Domain>;
 
-graphql_object!(DomainDocument: () |&self| {
-    field name() -> &str {
-        self.name.as_str()
+
+#[juniper::object]
+impl DomainDocument {
+    fn id(&self) -> &Uuid {
+        &self.id
+
     }
 
-    field doctype() -> &str {
-        self.doctype.as_str()
+    fn name(&self) -> &str {
+        &self.name
     }
 
-    field id() -> Uuid {
-        self.id
+    fn doctype(&self) -> &str {
+        &self.doctype
     }
 
-    field body() -> Domain {
-        self.body.clone()
+    fn body(&self) -> &Domain {
+        &self.body
     }
-});
-
+}
 
 #[derive(GraphQLObject)]
 #[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
