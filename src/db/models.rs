@@ -1,4 +1,5 @@
 use super::schema::{projects, documents};
+use crate::structure::common::RawDocument;
 use crate::structure::domain::{Domain, DomainDocument};
 use diesel::pg::PgConnection;
 use diesel::result::Error as DieselError;
@@ -10,7 +11,7 @@ use serde_json;
 
 #[derive(GraphQLObject)]
 #[derive(Serialize, Deserialize, Debug)]
-#[derive(AsChangeset, Queryable, Insertable)]
+#[derive(AsChangeset, Queryable, Insertable, Identifiable)]
 #[table_name="projects"]
 pub struct Project {
     pub id: Uuid,
@@ -19,7 +20,7 @@ pub struct Project {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-#[derive(AsChangeset, Queryable, Insertable)]
+#[derive(AsChangeset, Queryable, Insertable, Identifiable)]
 #[table_name="documents"]
 pub struct Document {
     pub id: Uuid,
@@ -31,7 +32,7 @@ pub struct Document {
 }
 
 impl Project {
-    pub fn create(name: &str, conn: &PgConnection) -> Result<Project, DieselError> {
+    pub fn create(conn: &PgConnection, name: &str) -> Result<Project, DieselError> {
 
 	let id = uuid::Uuid::new_v4();
 
@@ -46,7 +47,7 @@ impl Project {
 	    .get_result(conn)
     }
 
-    pub fn by_id(id: &Uuid, conn: &PgConnection) -> Result<Project, DieselError> {
+    pub fn by_id(conn: &PgConnection, id: &Uuid) -> Result<Project, DieselError> {
         projects::table.find(id)
             .first::<Project>(conn)
     }
@@ -76,6 +77,7 @@ impl Document {
             &"domain" => {
                 Ok(DomainDocument {
                     id: self.id,
+                    project_id: self.project_id,
                     doctype: self.doctype.clone(),
                     name: self.name.clone(),
                     version: self.version.clone(),
@@ -95,18 +97,22 @@ impl Document {
         }
     }
 
-    pub fn create(project_id: &Uuid, name: &str, conn: &PgConnection) -> Result<Self, DieselError> {
+    fn from_raw(doc: &RawDocument) -> Self {
+        Self {
+            id: doc.id.to_owned(),
+            project_id: doc.project_id.to_owned(),
+            version: doc.version.to_owned(),
+            name: doc.name.to_owned(),
+            doctype: doc.doctype.to_owned(),
+            body: doc.body.to_owned()
+        }
+    }
 
-        let doc = DomainDocument::default();
+    pub fn create_domain_document(conn: &PgConnection, project_id: &Uuid, name: &str) -> Result<Self, DieselError> {
 
-        let record = Self {
-            id: doc.id,
-            project_id: project_id.to_owned(),
-            version: 0,
-            name: name.to_owned(),
-            doctype: "domain".to_owned(),
-            body: serde_json::to_value(doc.body).unwrap(),
-        };
+        let mut doc = DomainDocument::new(&project_id);
+        doc.name = name.to_owned();
+        let record = Self::from_raw(&doc.as_raw());
 
         diesel::insert_into(documents::table)
             .values(record)
@@ -114,7 +120,14 @@ impl Document {
 
     }
 
-    pub fn by_id(id: &Uuid, conn: &PgConnection) -> Result<Document, DieselError> {
+    pub fn save(conn: &PgConnection, doc: &RawDocument) -> Result<Self, DieselError> {
+        let record = Self::from_raw(&doc);
+        diesel::update(documents::table)
+            .set(record).get_result(conn)
+    }
+
+
+    pub fn by_id(conn: &PgConnection, id: &Uuid) -> Result<Document, DieselError> {
         documents::table.find(id)
             .first::<Document>(conn)
     }

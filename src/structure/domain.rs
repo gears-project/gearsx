@@ -3,12 +3,10 @@ use super::common::{Document, DocumentReference};
 
 pub type DomainDocument = Document<Domain>;
 
-
 #[juniper::object]
 impl DomainDocument {
     fn id(&self) -> &Uuid {
         &self.id
-
     }
 
     fn name(&self) -> &str {
@@ -56,6 +54,7 @@ pub struct Validation {
 #[derive(GraphQLObject)]
 #[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub struct Attribute {
+    pub id: i32,
     pub name: String,
     pub vtype: String,
     pub default: String,
@@ -74,6 +73,7 @@ pub enum ReferenceType {
 #[derive(GraphQLObject)]
 #[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub struct Reference {
+    pub id: i32,
     pub name: String,
     pub reftype: ReferenceType,
     pub other: String,
@@ -82,6 +82,7 @@ pub struct Reference {
 #[derive(GraphQLObject)]
 #[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub struct Entity {
+    pub id: i32,
     pub name: String,
     pub attributes: Attributes,
     pub references: References,
@@ -100,8 +101,9 @@ impl Default for Events {
 }
 
 impl Attribute {
-    pub fn new(name: &str, attr_type: &str) -> Self {
+    pub fn new(id: i32, name: &str, attr_type: &str) -> Self {
         Attribute {
+            id: id,
             name: name.to_string().clone(),
             vtype: attr_type.to_string().clone(),
             default: "".to_string(),
@@ -111,6 +113,15 @@ impl Attribute {
 }
 
 impl Domain {
+    pub fn next_id(&self) -> Result<i32, String> {
+        let entity_ids: Vec<i32> = self.entities
+            .iter()
+            .map(|e| e.id)
+            .collect();
+        // Ok(entity_ids.iter().max()? + 1)
+        Ok(1)
+    }
+
     pub fn has_entity(&mut self, name: &str) -> bool {
         match self.get_entity(name) {
             Ok(_) => true,
@@ -132,11 +143,11 @@ impl Domain {
         }
     }
 
-    pub fn add_entity(&mut self, entity: Entity) -> Result<(), String> {
-        if self.has_entity(&entity.name) {
-            Err(format!("Entity {} already exists", entity.name))
+    pub fn add_entity(&mut self, name: &str) -> Result<(), String> {
+        if self.has_entity(&name) {
+            Err(format!("Entity {} already exists", name))
         } else {
-            self.entities.push(entity);
+            self.entities.push(Entity::new(self.next_id().unwrap(), name));
             Ok(())
         }
     }
@@ -155,6 +166,7 @@ impl Domain {
     }
 }
 
+/*
 impl Default for Entity {
     fn default() -> Self {
         Entity {
@@ -164,10 +176,12 @@ impl Default for Entity {
         }
     }
 }
+*/
 
 impl Entity {
-    pub fn new(name: &str) -> Self {
+    pub fn new(id: i32, name: &str) -> Self {
         Entity {
+            id: id,
             name: name.to_string().to_owned(),
             attributes: Attributes::new(),
             references: References::new(),

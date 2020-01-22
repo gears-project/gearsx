@@ -7,10 +7,20 @@ use uuid::Uuid;
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct Document<T> {
     pub id: Uuid,
+    pub project_id: Uuid,
     pub name: String,
     pub doctype: String,
     pub version: i32,
     pub body: T,
+}
+
+pub struct RawDocument<'a> {
+    pub id: &'a Uuid,
+    pub project_id: &'a Uuid,
+    pub name: &'a str,
+    pub doctype: &'a str,
+    pub version: &'a i32,
+    pub body: serde_json::Value,
 }
 
 pub type DocumentList<T> = Vec<Document<T>>;
@@ -31,9 +41,21 @@ impl<T> Document<T>
 where
     T: serde::Serialize + serde::de::DeserializeOwned + Eq + Default
 {
+    pub fn new(project_id: &Uuid) -> Self {
+        Self {
+            id: Uuid::new_v4(),
+            project_id: project_id.clone(),
+            name: "default".to_owned(),
+            doctype: "none".to_owned(),
+            version: 0,
+            body: <T>::default(),
+        }
+    }
+
     pub fn new_from_header(header: &DocumentHeader) -> Self {
         Self {
             id: header.id.clone(),
+            project_id: header.project_id.clone(),
             name: header.name.clone(),
             doctype: header.doctype.clone(),
             version: header.version.clone(),
@@ -44,6 +66,7 @@ where
     pub fn get_header(&self) -> DocumentHeader {
         DocumentHeader {
             id: self.id.clone(),
+            project_id: self.project_id.clone(),
             name: self.name.clone(),
             doctype: self.doctype.clone(),
             version: self.version.clone(),
@@ -55,6 +78,17 @@ where
         self.name = header.name.clone();
         self.doctype = header.doctype.clone();
         self.version = header.version.clone();
+    }
+
+    pub fn as_raw(&self) -> RawDocument {
+        RawDocument {
+            id: &self.id,
+            project_id: &self.project_id,
+            name: &self.name,
+            doctype: &self.doctype,
+            version: &self.version,
+            body: serde_json::to_value(&self.body).unwrap()
+        }
     }
 
     /// Return a string representation of the Document
@@ -141,6 +175,7 @@ where
 
 }
 
+/*
 impl<T> Default for Document<T>
 where
     T: Default,
@@ -148,6 +183,7 @@ where
     fn default() -> Self {
         Self {
             id: Uuid::new_v4(),
+            project_id: Uuid::new_v4(),
             name: "default".to_owned(),
             doctype: "none".to_owned(),
             version: 0,
@@ -155,6 +191,7 @@ where
         }
     }
 }
+*/
 
 //
 // This struct only exists to make the top-level Model object serializable into a project's
@@ -164,6 +201,7 @@ where
 #[derive(Serialize, Deserialize, Debug, Clone, Eq, PartialEq)]
 pub struct DocumentHeader {
     pub id: Uuid,
+    pub project_id: Uuid,
     pub name: String,
     pub doctype: String,
     pub version: i32,

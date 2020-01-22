@@ -51,16 +51,31 @@ pub struct DomainInput {
     project_id: Uuid,
 }
 
+#[derive(juniper::GraphQLInputObject)]
+pub struct DomainAddEntityInput {
+    name: String,
+    project_id: Uuid,
+    domain_id: Uuid,
+}
+
 #[juniper::object(Context = Context)]
 impl MutationRoot {
     fn create_project(context: &Context, project: ProjectInput) -> FieldResult<DBProject> {
-        let mut conn = context.dbpool.get().unwrap();
-        Ok(DBProject::create(&project.name, &conn).unwrap())
+        let mut conn = context.dbpool.get()?;
+        Ok(DBProject::create(&conn, &project.name)?)
     }
 
     fn add_domain(context: &Context, domain: DomainInput) -> FieldResult<DomainDocument> {
-        let mut conn = context.dbpool.get().unwrap();
-        Ok(DBDocument::create(&domain.project_id, &domain.name, &conn).unwrap().as_domain().unwrap())
+        let mut conn = context.dbpool.get()?;
+        Ok(DBDocument::create_domain_document(&conn, &domain.project_id, &domain.name)?.as_domain()?)
+    }
+
+    fn domain_add_entity(context: &Context, input: DomainAddEntityInput) -> FieldResult<DomainDocument> {
+        let mut conn = context.dbpool.get()?;
+        let mut doc = DBDocument::by_id(&conn, &input.domain_id)?.as_domain()?;
+        let _ = doc.body.add_entity(&input.name)?;
+        let _ = DBDocument::save(&conn, &doc.as_raw());
+        Ok(doc)
     }
 }
 

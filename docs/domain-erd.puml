@@ -1,0 +1,37 @@
+@startuml
+
+title Domain
+
+class Domain {
+  + events   : Events
+  + entities : [Entity]
+  () add_entity
+  () remove_entity
+}
+
+class Events {
+  + change [XFlow]
+  + update [XFlow]
+  + read [XFlow]
+  + delete [XFlow]
+  () all
+}
+
+class Attribute {
+    + name
+    + vtype
+    + default
+    + validations : [XFlow]
+}
+
+class Entity {
+    + attributes [Attribute]
+    + references [Reference]
+}
+
+Domain -- Events
+Domain -- Entity
+Entity -- Attribute
+Entity -- Reference
+
+@enduml
