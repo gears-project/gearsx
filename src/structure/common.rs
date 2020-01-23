@@ -22,7 +22,7 @@ pub struct RawDocument<'a> {
     pub body: serde_json::Value,
 }
 
-pub type DocumentList<T> = Vec<Document<T>>;
+// pub type DocumentList<T> = Vec<Document<T>>;
 
 #[derive(GraphQLObject, Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct DocumentReference {

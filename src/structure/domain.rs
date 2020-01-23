@@ -3,6 +3,7 @@ use uuid::Uuid;
 
 pub type DomainDocument = Document<Domain>;
 
+
 #[juniper::object]
 impl DomainDocument {
     fn id(&self) -> &Uuid {

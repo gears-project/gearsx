@@ -13,9 +13,13 @@ extern crate juniper;
 extern crate diesel;
 extern crate dotenv;
 
+#[macro_use]
+extern crate log;
+
 mod db;
 mod graphql;
 mod structure;
+mod messages;
 
 use actix_cors::Cors;
 use actix_web::{http, middleware, web, App, HttpServer};
@@ -23,22 +27,13 @@ use actix_web::{http, middleware, web, App, HttpServer};
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
     dotenv::dotenv().ok();
-    std::env::set_var("RUST_LOG", "actix_web=info,info");
+    std::env::set_var("RUST_LOG", "actix_web=info,debug");
     env_logger::init();
 
     let yaml = load_yaml!("cli.yml");
     let _matches = clap::App::from(yaml).get_matches();
 
     let pool = db::connection::get_connection_pool();
-
-    /*
-    let conn = db::connection::establish_connection();
-    let new_project = db::models::Project::create("First", &conn).unwrap();
-    let project = db::models::Project::by_id(&new_project.id, &conn).unwrap();
-    print!("Project {:?}", project);
-    let new_domain = db::models::Document::create(&project.id, "Yay", &conn).unwrap();
-    print!("Dom {:?}", new_domain);
-    */
 
     HttpServer::new(move || {
         App::new()
