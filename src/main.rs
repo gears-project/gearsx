@@ -14,11 +14,11 @@ extern crate diesel;
 extern crate dotenv;
 
 mod db;
-mod structure;
 mod graphql;
+mod structure;
 
-use actix_web::{http, middleware, web, App, HttpServer};
 use actix_cors::Cors;
+use actix_web::{http, middleware, web, App, HttpServer};
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
@@ -40,23 +40,22 @@ async fn main() -> std::io::Result<()> {
     print!("Dom {:?}", new_domain);
     */
 
-
     HttpServer::new(move || {
         App::new()
             .data(pool.clone())
             .wrap(middleware::Logger::default())
             .wrap(
                 Cors::new()
-                .allowed_methods(vec!["GET", "POST", "HEAD", "PUT"])
-                .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT])
-                .allowed_header(http::header::CONTENT_TYPE)
-                .max_age(3600)
-                .finish())
+                    .allowed_methods(vec!["GET", "POST", "HEAD", "PUT"])
+                    .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT])
+                    .allowed_header(http::header::CONTENT_TYPE)
+                    .max_age(3600)
+                    .finish(),
+            )
             .configure(graphql::handler::register)
             .default_service(web::to(|| async { "404" }))
     })
     .bind("127.0.0.1:8080")?
     .run()
     .await
-
 }

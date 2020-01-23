@@ -40,4 +40,3 @@ pub fn register(config: &mut web::ServiceConfig) {
         .route("/graphql", web::post().to(graphql))
         .route("/graphiql", web::get().to(graphql_playground));
 }
-

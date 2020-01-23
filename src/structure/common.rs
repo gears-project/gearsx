@@ -3,8 +3,7 @@ use serde_json;
 use serde_yaml;
 use uuid::Uuid;
 
-#[derive(Queryable)]
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
+#[derive(Queryable, Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct Document<T> {
     pub id: Uuid,
     pub project_id: Uuid,
@@ -25,8 +24,7 @@ pub struct RawDocument<'a> {
 
 pub type DocumentList<T> = Vec<Document<T>>;
 
-#[derive(GraphQLObject)]
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
+#[derive(GraphQLObject, Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct DocumentReference {
     pub id: Uuid,
 }
@@ -39,7 +37,7 @@ pub enum ModelLoadError {
 
 impl<T> Document<T>
 where
-    T: serde::Serialize + serde::de::DeserializeOwned + Eq + Default
+    T: serde::Serialize + serde::de::DeserializeOwned + Eq + Default,
 {
     pub fn new(project_id: &Uuid, doctype: String) -> Self {
         Self {
@@ -87,7 +85,7 @@ where
             name: &self.name,
             doctype: &self.doctype,
             version: &self.version,
-            body: serde_json::to_value(&self.body).unwrap()
+            body: serde_json::to_value(&self.body).unwrap(),
         }
     }
 
@@ -172,7 +170,6 @@ where
         self.version = self.version + 1;
         self.version
     }
-
 }
 
 /*

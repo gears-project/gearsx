@@ -1,9 +1,9 @@
-use uuid::Uuid;
 use juniper;
 use juniper::{FieldResult, RootNode};
+use uuid::Uuid;
 
 use crate::db::connection::Pool;
-use crate::db::models::{Project as DBProject, Document as DBDocument};
+use crate::db::models::{Document as DBDocument, Project as DBProject};
 use crate::structure::domain::DomainDocument;
 
 pub struct Context {
@@ -72,10 +72,17 @@ impl MutationRoot {
 
     fn add_domain(context: &Context, domain: DomainInput) -> FieldResult<DomainDocument> {
         let mut conn = context.dbpool.get()?;
-        Ok(DBDocument::create_domain_document(&conn, &domain.project_id, &domain.name)?)
+        Ok(DBDocument::create_domain_document(
+            &conn,
+            &domain.project_id,
+            &domain.name,
+        )?)
     }
 
-    fn domain_add_entity(context: &Context, input: DomainAddEntityInput) -> FieldResult<DomainDocument> {
+    fn domain_add_entity(
+        context: &Context,
+        input: DomainAddEntityInput,
+    ) -> FieldResult<DomainDocument> {
         let mut conn = context.dbpool.get()?;
         let mut doc = DBDocument::by_id(&conn, &input.domain_id)?.as_domain()?;
         let _ = doc.body.add_entity(&input.name)?;
@@ -89,5 +96,3 @@ impl MutationRoot {
         Ok(1)
     }
 }
-
-

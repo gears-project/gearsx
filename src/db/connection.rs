@@ -26,4 +26,3 @@ pub fn get_connection_pool() -> Pool {
         .expect("Failed to create pool.");
     pool
 }
-

@@ -1,5 +1,5 @@
-use uuid::Uuid;
 use super::common::{Document, DocumentReference};
+use uuid::Uuid;
 
 pub type DomainDocument = Document<Domain>;
 
@@ -22,15 +22,13 @@ impl DomainDocument {
     }
 }
 
-#[derive(GraphQLObject)]
-#[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
+#[derive(GraphQLObject, Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub struct Domain {
     pub events: Events,
     pub entities: Entities,
 }
 
-#[derive(GraphQLObject)]
-#[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
+#[derive(GraphQLObject, Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub struct Events {
     pub change: Vec<DocumentReference>,
     pub update: Vec<DocumentReference>,
@@ -44,15 +42,13 @@ pub type Attributes = Vec<Attribute>;
 pub type References = Vec<Reference>;
 pub type Validations = Vec<Validation>;
 
-#[derive(GraphQLObject)]
-#[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
+#[derive(GraphQLObject, Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub struct Validation {
     pub message: String,
     pub xflow: DocumentReference,
 }
 
-#[derive(GraphQLObject)]
-#[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
+#[derive(GraphQLObject, Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub struct Attribute {
     pub id: i32,
     pub name: String,
@@ -61,8 +57,7 @@ pub struct Attribute {
     pub validations: Vec<Validation>,
 }
 
-#[derive(GraphQLEnum)]
-#[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
+#[derive(GraphQLEnum, Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub enum ReferenceType {
     #[serde(rename = "has_many")]
     HasMany,
@@ -70,8 +65,7 @@ pub enum ReferenceType {
     BelongsTo,
 }
 
-#[derive(GraphQLObject)]
-#[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
+#[derive(GraphQLObject, Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub struct Reference {
     pub id: i32,
     pub name: String,
@@ -79,8 +73,7 @@ pub struct Reference {
     pub other: String,
 }
 
-#[derive(GraphQLObject)]
-#[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
+#[derive(GraphQLObject, Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub struct Entity {
     pub id: i32,
     pub name: String,
@@ -114,10 +107,7 @@ impl Attribute {
 
 impl Domain {
     pub fn next_id(&self) -> Result<i32, String> {
-        let entity_ids: Vec<i32> = self.entities
-            .iter()
-            .map(|e| e.id)
-            .collect();
+        let entity_ids: Vec<i32> = self.entities.iter().map(|e| e.id).collect();
         Ok(entity_ids.iter().max().unwrap_or(&0).to_owned() + 1)
     }
 
@@ -129,11 +119,10 @@ impl Domain {
     }
 
     pub fn get_entity(&mut self, name: &str) -> Result<&Entity, String> {
-        let mut res: Vec<&Entity> = self.entities
+        let mut res: Vec<&Entity> = self
+            .entities
             .iter()
-            .filter({
-                |e| e.name.eq(name)
-            })
+            .filter({ |e| e.name.eq(name) })
             .collect();
         if res.len() == 1 {
             Ok(&mut res[0])
@@ -146,7 +135,8 @@ impl Domain {
         if self.has_entity(&name) {
             Err(format!("Entity {} already exists", name))
         } else {
-            self.entities.push(Entity::new(self.next_id().unwrap(), name));
+            self.entities
+                .push(Entity::new(self.next_id().unwrap(), name));
             Ok(())
         }
     }
@@ -156,9 +146,7 @@ impl Domain {
 
         self.entities = entities
             .into_iter()
-            .filter({
-                |e| e.name.ne(entity)
-            })
+            .filter({ |e| e.name.ne(entity) })
             .collect();
 
         Ok(())
@@ -188,11 +176,10 @@ impl Entity {
     }
 
     pub fn get_attribute(self, name: &str) -> Result<Attribute, String> {
-        let res: Vec<&Attribute> = self.attributes
+        let res: Vec<&Attribute> = self
+            .attributes
             .iter()
-            .filter({
-                |e| e.name.eq(name)
-            })
+            .filter({ |e| e.name.eq(name) })
             .collect();
         if res.len() == 1 {
             Ok(res[0].clone())
@@ -215,4 +202,3 @@ impl Default for Domain {
         }
     }
 }
-
