@@ -67,7 +67,7 @@ impl MutationRoot {
 
     fn add_domain(context: &Context, domain: DomainInput) -> FieldResult<DomainDocument> {
         let mut conn = context.dbpool.get()?;
-        Ok(DBDocument::create_domain_document(&conn, &domain.project_id, &domain.name)?.as_domain()?)
+        Ok(DBDocument::create_domain_document(&conn, &domain.project_id, &domain.name)?)
     }
 
     fn domain_add_entity(context: &Context, input: DomainAddEntityInput) -> FieldResult<DomainDocument> {

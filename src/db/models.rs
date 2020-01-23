@@ -108,22 +108,22 @@ impl Document {
         }
     }
 
-    pub fn create_domain_document(conn: &PgConnection, project_id: &Uuid, name: &str) -> Result<Self, DieselError> {
+    pub fn create_domain_document(conn: &PgConnection, project_id: &Uuid, name: &str) -> Result<DomainDocument, DieselError> {
 
-        let mut doc = DomainDocument::new(&project_id);
+        let mut doc = DomainDocument::new(&project_id, "domain".to_owned());
         doc.name = name.to_owned();
         let record = Self::from_raw(&doc.as_raw());
 
-        diesel::insert_into(documents::table)
+        let res : Self = diesel::insert_into(documents::table)
             .values(record)
-	    .get_result(conn)
-
+        .get_result(conn)?;
+        Ok(res.as_domain().unwrap())
     }
 
     pub fn save(conn: &PgConnection, doc: &RawDocument) -> Result<Self, DieselError> {
         let record = Self::from_raw(&doc);
-        diesel::update(documents::table)
-            .set(record).get_result(conn)
+        diesel::update(documents::table).set(&record)
+            .get_result(conn)
     }
 
 

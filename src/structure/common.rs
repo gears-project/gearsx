@@ -41,12 +41,12 @@ impl<T> Document<T>
 where
     T: serde::Serialize + serde::de::DeserializeOwned + Eq + Default
 {
-    pub fn new(project_id: &Uuid) -> Self {
+    pub fn new(project_id: &Uuid, doctype: String) -> Self {
         Self {
             id: Uuid::new_v4(),
             project_id: project_id.clone(),
             name: "default".to_owned(),
-            doctype: "none".to_owned(),
+            doctype: doctype,
             version: 0,
             body: <T>::default(),
         }
