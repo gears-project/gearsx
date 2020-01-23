@@ -118,8 +118,7 @@ impl Domain {
             .iter()
             .map(|e| e.id)
             .collect();
-        // Ok(entity_ids.iter().max()? + 1)
-        Ok(1)
+        Ok(entity_ids.iter().max().unwrap_or(&0).to_owned() + 1)
     }
 
     pub fn has_entity(&mut self, name: &str) -> bool {

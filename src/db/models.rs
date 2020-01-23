@@ -143,16 +143,11 @@ impl Document {
             })
             .collect()
         )
-            
     }
 
-/*
-    pub fn delete(id: &str, connection: &PgConnection) -> Result<(), DieselError> {
-        diesel::delete(projects::table.find(id))
-            .execute(connection)?;
-        Ok(())
+    pub fn delete_project(conn: &PgConnection, id: &Uuid) -> Result<usize, DieselError> {
+        diesel::delete(projects::table.find(id)).execute(conn)
     }
-*/
 }
 
 /*

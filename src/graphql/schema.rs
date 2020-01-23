@@ -58,6 +58,11 @@ pub struct DomainAddEntityInput {
     domain_id: Uuid,
 }
 
+#[derive(juniper::GraphQLInputObject)]
+pub struct ProjectIdInput {
+    project_id: Uuid,
+}
+
 #[juniper::object(Context = Context)]
 impl MutationRoot {
     fn create_project(context: &Context, project: ProjectInput) -> FieldResult<DBProject> {
@@ -76,6 +81,12 @@ impl MutationRoot {
         let _ = doc.body.add_entity(&input.name)?;
         let _ = DBDocument::save(&conn, &doc.as_raw());
         Ok(doc)
+    }
+
+    fn delete_project(context: &Context, input: ProjectIdInput) -> FieldResult<i32> {
+        let mut conn = context.dbpool.get()?;
+        let res = DBDocument::delete_project(&conn, &input.project_id)?;
+        Ok(1)
     }
 }
 
