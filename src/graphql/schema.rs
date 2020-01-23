@@ -24,7 +24,7 @@ impl QueryRoot {
     #[graphql(description = "List of all projects")]
     fn projects(context: &Context, paging: Option<QueryPage>) -> FieldResult<Vec<DBProject>> {
         let mut conn = context.dbpool.get()?;
-        let projects = DBProject::find(&conn, )?;
+        let projects = DBProject::find(&conn, paging)?;
         Ok(projects)
     }
 

@@ -4,6 +4,7 @@ use crate::diesel::QueryDsl;
 use crate::diesel::RunQueryDsl;
 use crate::structure::common::RawDocument;
 use crate::structure::domain::{Domain, DomainDocument};
+use crate::messages::{QueryPage};
 use diesel::pg::PgConnection;
 use diesel::result::Error as DieselError;
 use serde_json;
@@ -49,8 +50,9 @@ impl Project {
         projects::table.find(id).first::<Project>(conn)
     }
 
-    pub fn find(conn: &PgConnection) -> Result<Vec<Project>, DieselError> {
-        projects::table.load::<Project>(conn)
+    pub fn find(conn: &PgConnection, paging: Option<QueryPage>) -> Result<Vec<Project>, DieselError> {
+        let limit = paging.unwrap_or(QueryPage::default()).limit.unwrap_or(0);
+        projects::table.limit(limit.into()).load::<Project>(conn)
     }
 
     /*

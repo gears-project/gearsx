@@ -6,6 +6,15 @@ pub struct QueryPage {
     pub offset: Option<i32>,
 }
 
+impl Default for QueryPage {
+    fn default() -> Self {
+        Self {
+            limit: Some(0),
+            offset: Some(0),
+        }
+    }
+}
+
 #[derive(juniper::GraphQLInputObject)]
 pub struct ProjectInput {
     pub name: String,
