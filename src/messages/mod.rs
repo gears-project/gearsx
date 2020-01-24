@@ -9,7 +9,7 @@ pub struct QueryPage {
 impl Default for QueryPage {
     fn default() -> Self {
         Self {
-            limit: Some(0),
+            limit: None,
             offset: Some(0),
         }
     }
@@ -19,6 +19,13 @@ impl Default for QueryPage {
 pub struct ProjectInput {
     pub name: String,
     pub description: Option<String>,
+}
+
+#[derive(juniper::GraphQLInputObject)]
+pub struct ModelInput {
+    pub name: String,
+    pub description: Option<String>,
+    pub project_id: Uuid,
 }
 
 #[derive(juniper::GraphQLInputObject)]

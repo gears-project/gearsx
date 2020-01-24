@@ -27,6 +27,7 @@ pub struct RawDocument<'a> {
 #[derive(GraphQLObject, Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct DocumentReference {
     pub id: Uuid,
+    pub doctype: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

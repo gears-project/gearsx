@@ -3,21 +3,48 @@ use crate::diesel::ExpressionMethods;
 use crate::diesel::QueryDsl;
 use crate::diesel::RunQueryDsl;
 use crate::structure::common::RawDocument;
+use crate::structure::modelx::{Modelx, ModelxDocument};
 use crate::structure::domain::{Domain, DomainDocument};
 use crate::messages::{QueryPage};
 use diesel::pg::PgConnection;
 use diesel::result::Error as DieselError;
 use serde_json;
 use uuid::Uuid;
+use crate::graphql::schema;
 
 #[derive(
-    GraphQLObject, Serialize, Deserialize, Debug, AsChangeset, Queryable, Insertable, Identifiable,
+    Serialize, Deserialize, Debug, AsChangeset, Queryable, Insertable, Identifiable,
 )]
 #[table_name = "projects"]
 pub struct Project {
     pub id: Uuid,
     pub name: String,
     pub description: String,
+    pub model_id: Option<Uuid>,
+}
+
+#[juniper::object(Context = schema::Context)]
+impl Project {
+    fn id(&self) -> &Uuid {
+        &self.id
+    }
+
+    fn name(&self) -> &str {
+        &self.name
+    }
+
+    fn description(&self) -> &str {
+        &self.description
+    }
+
+    fn model(&self, context: &schema::Context) -> juniper::FieldResult<Option<ModelxDocument>> {
+        let mut conn = context.dbpool.get()?;
+        if let Some(id) = &self.model_id {
+            Ok(Some(Document::by_id(&conn, id)?.as_modelx()?))
+        } else {
+            Ok(None)
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug, AsChangeset, Queryable, Insertable, Identifiable)]
@@ -39,6 +66,7 @@ impl Project {
             id: id,
             name: name.to_owned(),
             description: name.to_owned(),
+            model_id: None,
         };
 
         diesel::insert_into(projects::table)
@@ -51,8 +79,12 @@ impl Project {
     }
 
     pub fn find(conn: &PgConnection, paging: Option<QueryPage>) -> Result<Vec<Project>, DieselError> {
-        let limit = paging.unwrap_or(QueryPage::default()).limit.unwrap_or(0);
-        projects::table.limit(limit.into()).load::<Project>(conn)
+        let p = paging.unwrap_or(QueryPage::default());
+        if let Some(limit) = p.limit {
+            projects::table.limit(limit.into()).offset(p.offset.unwrap_or(0).into()).load::<Project>(conn)
+        } else {
+            projects::table.load::<Project>(conn)
+        }
     }
 
     /*
@@ -80,6 +112,20 @@ impl Document {
                 body: serde_json::from_value::<Domain>(self.body.clone()).unwrap(),
             }),
             _ => Err("Not a domain document".to_owned()),
+        }
+    }
+
+    pub fn as_modelx(&self) -> Result<ModelxDocument, String> {
+        match &self.doctype.as_str() {
+            &"domain" => Ok(ModelxDocument {
+                id: self.id,
+                project_id: self.project_id,
+                doctype: self.doctype.clone(),
+                name: self.name.clone(),
+                version: self.version.clone(),
+                body: serde_json::from_value::<Modelx>(self.body.clone()).unwrap(),
+            }),
+            _ => Err("Not a modelx document".to_owned()),
         }
     }
 
@@ -116,6 +162,20 @@ impl Document {
         Ok(res.as_domain().unwrap())
     }
 
+    pub fn create_model_document(
+        conn: &PgConnection,
+        input: &crate::messages::ModelInput,
+    ) -> Result<ModelxDocument, DieselError> {
+        let mut doc = ModelxDocument::new(&input.project_id, "modelx".to_owned());
+        doc.name = input.name.to_owned();
+        let record = Self::from_raw(&doc.as_raw());
+
+        let res: Self = diesel::insert_into(documents::table)
+            .values(record)
+            .get_result(conn)?;
+        Ok(res.as_modelx().unwrap())
+    }
+
     pub fn save(conn: &PgConnection, doc: &RawDocument) -> Result<Self, DieselError> {
         let record = Self::from_raw(&doc);
         diesel::update(documents::table)
@@ -130,8 +190,7 @@ impl Document {
     pub fn find_domains(conn: &PgConnection) -> Result<Vec<DomainDocument>, DieselError> {
         Ok(documents::table
             .filter(documents::doctype.eq(&"domain"))
-            .load::<Document>(conn)
-            .unwrap()
+            .load::<Document>(conn)?
             .iter()
             .map(|res| res.as_domain().unwrap())
             .collect())

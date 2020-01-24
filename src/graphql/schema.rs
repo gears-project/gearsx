@@ -4,6 +4,7 @@ use juniper::{FieldResult, RootNode};
 use crate::db::connection::Pool;
 use crate::db::models::{Document as DBDocument, Project as DBProject};
 use crate::structure::domain::DomainDocument;
+use crate::structure::modelx::ModelxDocument;
 use crate::messages::*;
 
 pub struct Context {
@@ -53,6 +54,15 @@ impl MutationRoot {
             &conn,
             &domain.project_id,
             &domain.name,
+        )?)
+    }
+
+    fn add_model(context: &Context, input: ModelInput) -> FieldResult<ModelxDocument> {
+        debug!("add_model for project {}", input.project_id);
+        let mut conn = context.dbpool.get()?;
+        Ok(DBDocument::create_model_document(
+            &conn,
+            &input,
         )?)
     }
 
