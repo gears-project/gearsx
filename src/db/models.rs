@@ -2,7 +2,7 @@ use super::schema::{documents, projects};
 use crate::diesel::ExpressionMethods;
 use crate::diesel::QueryDsl;
 use crate::diesel::RunQueryDsl;
-use crate::structure::common::RawDocument;
+use crate::structure::common::{RawDocument, DocumentReference};
 use crate::structure::modelx::{Modelx, ModelxDocument};
 use crate::structure::domain::{Domain, DomainDocument};
 use crate::messages::{QueryPage};
@@ -59,6 +59,41 @@ pub struct Document {
 }
 
 impl Project {
+    pub fn initialize_new_project(conn: &PgConnection, name: &str) -> Result<Project, DieselError> {
+        debug!("initialize_new_project : {}", name);
+
+        let mut project = Self::create(conn, &name)?;
+
+        debug!("initialize_new_project : {} : project id : {}", name, project.id);
+
+        let mut model = Document::create_model_document(conn, &crate::messages::ModelInput {
+            name: name.to_string(),
+            description: None,
+            project_id: project.id,
+        })?;
+
+        debug!("initialize_new_project : {} : model id : {}", name, model.id);
+
+        project.model_id = model.id.into();
+        let updated_project = diesel::update(projects::table)
+            .set(&project)
+            .get_result::<Project>(conn)?;
+
+        let domain = Document::create_domain_document(conn, &project.id, "Domain".into())?;
+        debug!("initialize_new_project : {} : domain id : {}", name, domain.id);
+
+        model.body.domain = Some(DocumentReference {
+            id: domain.id,
+            doctype: "domain".to_string(),
+        });
+        let _ = Document::save(conn, &model.as_raw())?;
+        Ok(updated_project)
+
+        /*
+        Ok(project)
+        */
+    }
+
     pub fn create(conn: &PgConnection, name: &str) -> Result<Project, DieselError> {
         let id = uuid::Uuid::new_v4();
 
@@ -102,6 +137,7 @@ pub enum GearsDocument {
 
 impl Document {
     pub fn as_domain(&self) -> Result<DomainDocument, String> {
+        debug!("as_domain {}", &self.doctype.as_str());
         match &self.doctype.as_str() {
             &"domain" => Ok(DomainDocument {
                 id: self.id,
@@ -117,7 +153,7 @@ impl Document {
 
     pub fn as_modelx(&self) -> Result<ModelxDocument, String> {
         match &self.doctype.as_str() {
-            &"domain" => Ok(ModelxDocument {
+            &"modelx" => Ok(ModelxDocument {
                 id: self.id,
                 project_id: self.project_id,
                 doctype: self.doctype.clone(),
@@ -159,7 +195,8 @@ impl Document {
         let res: Self = diesel::insert_into(documents::table)
             .values(record)
             .get_result(conn)?;
-        Ok(res.as_domain().unwrap())
+        // Ok(res.as_domain().unwrap())
+        Ok(doc)
     }
 
     pub fn create_model_document(
@@ -179,6 +216,7 @@ impl Document {
     pub fn save(conn: &PgConnection, doc: &RawDocument) -> Result<Self, DieselError> {
         let record = Self::from_raw(&doc);
         diesel::update(documents::table)
+            .filter(documents::id.eq(doc.id))
             .set(&record)
             .get_result(conn)
     }

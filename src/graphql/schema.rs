@@ -41,6 +41,12 @@ pub struct MutationRoot;
 
 #[juniper::object(Context = Context)]
 impl MutationRoot {
+    fn init_new_project(context: &Context, project: ProjectInput) -> FieldResult<DBProject> {
+        debug!("init_new_project : {}", project.name);
+        let mut conn = context.dbpool.get()?;
+        Ok(DBProject::initialize_new_project(&conn, &project.name)?)
+    }
+
     fn create_project(context: &Context, project: ProjectInput) -> FieldResult<DBProject> {
         debug!("create_project : {}", project.name);
         let mut conn = context.dbpool.get()?;
