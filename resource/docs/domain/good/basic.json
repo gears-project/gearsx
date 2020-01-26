@@ -1,0 +1,116 @@
+{
+    "doctype": "domain",
+    "doctype_version": 1,
+    "id": "e4f0518a-fd2d-403e-9c20-79041c1c14ae",
+    "name" : "Forum Model",
+    "version" : 1,
+    "body" : {
+        "events": {
+            "change":[],
+            "update":[],
+            "read":[],
+            "delete":[],
+            "all":[
+                {
+                    "id": "e4f0518a-fd0d-403e-9c20-79041c1c14ae"
+                }
+            ]
+        },
+        "entities": [
+            {
+                "name": "post",
+                "attributes": [
+                    {
+                        "name": "title",
+                        "vtype": "string",
+                        "default": "",
+                        "validations": [
+                            {
+                                "message": {
+                                    "locale": "en_US",
+                                    "key": "a_value_is_required",
+                                    "value": "Value is required"
+                                },
+                                "xflow": {
+                                    "id": "e4f0518a-fd0d-403e-9c20-79041c1c14ae"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "name": "body",
+                        "vtype": "string",
+                        "default": "",
+                        "validations": [
+                            {
+                                "message": {
+                                    "locale": "en_US",
+                                    "key": "a_value_is_required",
+                                    "value": "Value is required"
+                                },
+                                "xflow": {
+                                    "id": "e4f0518a-fd0d-403e-9c20-79041c1c14ae"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "name": "created",
+                        "vtype": "string",
+                        "default": "",
+                        "validations": [
+                            {
+                                "message": {
+                                    "locale": "en_US",
+                                    "key": "a_value_is_required",
+                                    "value": "Value is required"
+                                },
+                                "xflow": {
+                                    "id": "e4f0518a-fd0d-403e-9c20-79041c1c14ae"
+                                }
+                            }
+                        ]
+                    }
+                ],
+                "references" : [
+                    {
+                        "name": "comment",
+                        "reftype": "has_many",
+                        "other": "comment"
+                    }
+                ]
+            },
+            {
+                "name": "comment",
+                "attributes": [
+                    {
+                        "name": "post",
+                        "vtype": "string",
+                        "storage": "persistent",
+                        "default": "",
+                        "validations": [
+                            {
+                                "message": {
+                                    "locale": "en_US",
+                                    "key": "a_value_is_required",
+                                    "value": "Value is required"
+                                },
+                                "xflow": {
+                                    "id": "e4f0518a-fd0d-403e-9c20-79041c1c14ae"
+                                }
+                            }
+                        ]
+                    }
+                ],
+                "references" : [
+                    {
+                        "name": "post",
+                        "reftype": "belongs_to",
+                        "other": "post"
+                    }
+                ]
+            }
+        ]
+    }
+}
+

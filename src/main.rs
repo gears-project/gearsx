@@ -20,6 +20,7 @@ mod db;
 mod graphql;
 mod structure;
 mod messages;
+mod util;
 
 use actix_cors::Cors;
 use actix_web::{http, middleware, web, App, HttpServer};

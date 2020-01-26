@@ -89,9 +89,6 @@ impl Project {
         let _ = Document::save(conn, &model.as_raw())?;
         Ok(updated_project)
 
-        /*
-        Ok(project)
-        */
     }
 
     pub fn create(conn: &PgConnection, name: &str) -> Result<Project, DieselError> {
@@ -195,8 +192,7 @@ impl Document {
         let res: Self = diesel::insert_into(documents::table)
             .values(record)
             .get_result(conn)?;
-        // Ok(res.as_domain().unwrap())
-        Ok(doc)
+        Ok(res.as_domain().unwrap())
     }
 
     pub fn create_model_document(
