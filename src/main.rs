@@ -13,33 +13,28 @@ extern crate juniper;
 extern crate diesel;
 extern crate dotenv;
 
-mod db;
-mod structure;
-mod graphql;
+#[macro_use]
+extern crate log;
 
-use actix_web::{http, middleware, web, App, HttpServer};
+mod db;
+mod graphql;
+mod structure;
+mod messages;
+mod util;
+
 use actix_cors::Cors;
+use actix_web::{http, middleware, web, App, HttpServer};
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
     dotenv::dotenv().ok();
-    std::env::set_var("RUST_LOG", "actix_web=info,info");
+    std::env::set_var("RUST_LOG", "actix_web=info,debug");
     env_logger::init();
 
     let yaml = load_yaml!("cli.yml");
-    let matches = clap::App::from(yaml).get_matches();
+    let _matches = clap::App::from(yaml).get_matches();
 
     let pool = db::connection::get_connection_pool();
-
-    /*
-    let conn = db::connection::establish_connection();
-    let new_project = db::models::Project::create("First", &conn).unwrap();
-    let project = db::models::Project::by_id(&new_project.id, &conn).unwrap();
-    print!("Project {:?}", project);
-    let new_domain = db::models::Document::create(&project.id, "Yay", &conn).unwrap();
-    print!("Dom {:?}", new_domain);
-    */
-
 
     HttpServer::new(move || {
         App::new()
@@ -47,16 +42,16 @@ async fn main() -> std::io::Result<()> {
             .wrap(middleware::Logger::default())
             .wrap(
                 Cors::new()
-                .allowed_methods(vec!["GET", "POST", "HEAD", "PUT"])
-                .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT])
-                .allowed_header(http::header::CONTENT_TYPE)
-                .max_age(3600)
-                .finish())
+                    .allowed_methods(vec!["GET", "POST", "HEAD", "PUT"])
+                    .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT])
+                    .allowed_header(http::header::CONTENT_TYPE)
+                    .max_age(3600)
+                    .finish(),
+            )
             .configure(graphql::handler::register)
             .default_service(web::to(|| async { "404" }))
     })
     .bind("127.0.0.1:8080")?
     .run()
     .await
-
 }

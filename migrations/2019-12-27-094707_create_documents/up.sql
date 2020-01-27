@@ -1,8 +1,9 @@
 CREATE TABLE documents (
   id UUID PRIMARY KEY NOT NULL,
-  project_id UUID REFERENCES projects(id) NOT NULL,
+  project_id UUID REFERENCES projects(id) ON DELETE CASCADE NOT NULL,
   name TEXT NOT NULL,
   doctype TEXT NOT NULL,
+  version INTEGER NOT NULL,
   body jsonb NOT NULL
 );
 

@@ -4,12 +4,15 @@ version = "0.1.0"
 authors = ["Michiel Kalkman <michiel@nosuchtype.com>"]
 edition = "2018"
 
+[lib]
+name = "gearsx"
+
 [dependencies]
 clap = {version = "2.31", features = ["yaml"]}
-diesel = { version = "1.4.0", features = ["postgres", "uuidv07", "serde_json", "r2d2"] }
-dotenv = "0.10"
+diesel = { version = "1.4.3", features = ["postgres", "uuidv07", "serde_json", "r2d2"] }
+dotenv = "0.15.0"
 uuid = { version = "0.7", features = ["serde", "v4"] }
-juniper = "0.13"
+juniper = "0.14.2"
 serde = "1.0"
 serde_json = "1.0"
 serde_yaml = "0.8"
@@ -20,6 +23,10 @@ actix-rt = "1.0.0"
 actix-cors = "0.2"
 futures = "0.3.1"
 log = "0.4"
-env_logger = "0.6.2"
+env_logger = "0.7.1"
+glob = "0.3"
 
 r2d2 = "0.8"
+
+[dev-dependencies]
+tempdir =  "0.3"

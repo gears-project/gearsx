@@ -4,6 +4,7 @@ table! {
         project_id -> Uuid,
         name -> Text,
         doctype -> Text,
+        version -> Int4,
         body -> Jsonb,
     }
 }
@@ -13,10 +14,9 @@ table! {
         id -> Uuid,
         name -> Text,
         description -> Text,
+        model_id -> Nullable<Uuid>,
     }
 }
-
-joinable!(documents -> projects (project_id));
 
 allow_tables_to_appear_in_same_query!(
     documents,
