@@ -4,6 +4,9 @@ version = "0.1.0"
 authors = ["Michiel Kalkman <michiel@nosuchtype.com>"]
 edition = "2018"
 
+[lib]
+name = "gearsx"
+
 [dependencies]
 clap = {version = "2.31", features = ["yaml"]}
 diesel = { version = "1.4.3", features = ["postgres", "uuidv07", "serde_json", "r2d2"] }

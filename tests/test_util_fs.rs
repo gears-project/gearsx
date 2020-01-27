@@ -1,16 +1,15 @@
 extern crate env_logger;
 extern crate tempdir;
 
-// extern crate gearsx;
+extern crate gearsx;
 
-use super::util::fs::{model_from_fs, model_to_fs};
+use gearsx::util::fs::{model_from_fs, model_to_fs};
 use tempdir::TempDir;
 
 mod common;
 
 #[test]
 fn test_load_basic_project() {
-    // partof: TST-serialization-fs
     let _ = env_logger::try_init();
     if let Ok(model) = model_from_fs(&"resource/projects/basic") {
         assert_eq!(model.version, 1);
@@ -22,7 +21,6 @@ fn test_load_basic_project() {
 #[test]
 fn test_model_to_and_from_fs() {
     let _ = env_logger::try_init();
-    // partof: #TST-serialization-fs
 
     let model_a = model_from_fs("resource/projects/basic").unwrap();
 
@@ -38,5 +36,4 @@ fn test_model_to_and_from_fs() {
     let model_b = model_from_fs(&root_b_path).unwrap();
 
     assert_eq!(model_a.id, model_b.id);
-    assert_eq!(model_a.body.xflows.len(), model_b.body.xflows.len());
 }

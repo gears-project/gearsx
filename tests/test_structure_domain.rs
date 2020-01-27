@@ -1,7 +1,7 @@
 extern crate env_logger;
 
 extern crate gearsx;
-use gears::structure::domain::*;
+use gearsx::structure::domain::*;
 
 mod common;
 use crate::common::load_doc;
@@ -12,7 +12,7 @@ fn test_load_domain() {
 
     let domain = load_doc::<DomainDocument>("resource/docs/domain/good/basic.json");
 
-    assert_eq!(std::mem::size_of_val(&domain), 216);
+    assert_eq!(std::mem::size_of_val(&domain), 232);
     assert_eq!(domain.body.events.change.len(), 0);
     assert_eq!(domain.body.events.update.len(), 0);
     assert_eq!(domain.body.events.read.len(), 0);

@@ -2,6 +2,7 @@
     "doctype": "domain",
     "doctype_version": 1,
     "id": "e4f0518a-fd2d-403e-9c20-79041c1c14ae",
+    "project_id": "e4f0518a-fd2d-403e-9c20-79041c1c14ae",
     "name" : "Forum Model",
     "version" : 1,
     "body" : {
@@ -12,68 +13,44 @@
             "delete":[],
             "all":[
                 {
+                    "doctype": "xflow",
                     "id": "e4f0518a-fd0d-403e-9c20-79041c1c14ae"
                 }
             ]
         },
         "entities": [
             {
+                "id": 1,
                 "name": "post",
                 "attributes": [
                     {
+                        "id": 2,
                         "name": "title",
                         "vtype": "string",
                         "default": "",
                         "validations": [
-                            {
-                                "message": {
-                                    "locale": "en_US",
-                                    "key": "a_value_is_required",
-                                    "value": "Value is required"
-                                },
-                                "xflow": {
-                                    "id": "e4f0518a-fd0d-403e-9c20-79041c1c14ae"
-                                }
-                            }
                         ]
                     },
                     {
+                        "id": 3,
                         "name": "body",
                         "vtype": "string",
                         "default": "",
                         "validations": [
-                            {
-                                "message": {
-                                    "locale": "en_US",
-                                    "key": "a_value_is_required",
-                                    "value": "Value is required"
-                                },
-                                "xflow": {
-                                    "id": "e4f0518a-fd0d-403e-9c20-79041c1c14ae"
-                                }
-                            }
                         ]
                     },
                     {
+                        "id": 4,
                         "name": "created",
                         "vtype": "string",
                         "default": "",
                         "validations": [
-                            {
-                                "message": {
-                                    "locale": "en_US",
-                                    "key": "a_value_is_required",
-                                    "value": "Value is required"
-                                },
-                                "xflow": {
-                                    "id": "e4f0518a-fd0d-403e-9c20-79041c1c14ae"
-                                }
-                            }
                         ]
                     }
                 ],
                 "references" : [
                     {
+                        "id": 5,
                         "name": "comment",
                         "reftype": "has_many",
                         "other": "comment"
@@ -81,29 +58,22 @@
                 ]
             },
             {
+                "id": 6,
                 "name": "comment",
                 "attributes": [
                     {
+                        "id": 7,
                         "name": "post",
                         "vtype": "string",
                         "storage": "persistent",
                         "default": "",
                         "validations": [
-                            {
-                                "message": {
-                                    "locale": "en_US",
-                                    "key": "a_value_is_required",
-                                    "value": "Value is required"
-                                },
-                                "xflow": {
-                                    "id": "e4f0518a-fd0d-403e-9c20-79041c1c14ae"
-                                }
-                            }
                         ]
                     }
                 ],
                 "references" : [
                     {
+                        "id": 8,
                         "name": "post",
                         "reftype": "belongs_to",
                         "other": "post"
