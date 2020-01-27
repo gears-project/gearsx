@@ -1,0 +1,11 @@
+{
+    "doctype": "modelx",
+    "id": "e4f0518a-fd2d-403e-9c20-79041c1c14ae",
+    "project_id": "00000000-0000-0000-0000-000000000000",
+    "name" : "Basic ModelX",
+    "version" : 1,
+    "body" : {
+      "domain" : null
+    }
+}
+

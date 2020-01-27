@@ -203,3 +203,18 @@ impl Default for Domain {
         }
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::DomainDocument;
+    fn test_init_domain() {
+        let doc = DomainDocument::new(
+            &crate::util::naming::empty_uuid(),
+            "domain".into()
+        );
+        assert_eq!(doc.doctype, "domain");
+            
+    }
+
+
+}
