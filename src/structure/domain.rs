@@ -1,12 +1,29 @@
 use super::common::{Document, DocumentReference};
 use uuid::Uuid;
+use std::error;
+use std::fmt;
 
 pub type DomainDocument = Document<Domain>;
 
+#[derive(Debug)]
 pub enum DomainError {
     EntityDoesNotExist(String),
     AttributeDoesNotExist(String, String),
     ReferenceDoesNotExist(String, String),
+}
+
+impl fmt::Display for DomainError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "invalid first item to double")
+    }
+}
+
+// This is important for other errors to wrap this one.
+impl error::Error for DomainError {
+    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
+        // Generic error, underlying cause isn't tracked.
+        None
+    }
 }
 
 
@@ -134,7 +151,7 @@ impl Domain {
         res.len() == 1
     }
 
-    pub fn get_entity(&mut self, id: &i32) -> Result<&Entity, String> {
+    pub fn get_entity(&mut self, id: &i32) -> Result<&Entity, DomainError> {
         let mut res: Vec<&Entity> = self
             .entities
             .iter()
@@ -143,11 +160,13 @@ impl Domain {
         if res.len() == 1 {
             Ok(&mut res[0])
         } else {
-            Err(format!("Entity {} does not exist", id))
+            Err(
+                DomainError::EntityDoesNotExist(format!("Entity id:{} does not exist", id))
+            )
         }
     }
 
-    pub fn get_entity_mut(&mut self, id: &i32) -> Result<&mut Entity, String> {
+    pub fn get_entity_mut(&mut self, id: &i32) -> Result<&mut Entity, DomainError> {
         let index = self
             .entities
             .iter()
@@ -158,7 +177,9 @@ impl Domain {
                 Ok(self.entities.get_mut(idx).unwrap())
             },
             None => {
-                Err(format!("Entity {} does not exist", id))
+                Err(
+                    DomainError::EntityDoesNotExist(format!("Entity id:{} does not exist", id))
+                )
             }
         }
     }
@@ -176,9 +197,13 @@ impl Domain {
         }
     }
 
-    pub fn add_entity(&mut self, name: &str) -> Result<Entity, String> {
+    pub fn add_entity(&mut self, name: &str) -> Result<Entity, DomainError> {
         if self.has_entity_name(&name) {
-            Err(format!("Entity {} already exists", name))
+            Err(
+                DomainError::EntityDoesNotExist(
+                    format!("Entity {} already exists", name)
+                )
+            )
         } else {
             let entity = Entity::new(self.next_id().unwrap(), name);
             self.entities
@@ -198,12 +223,17 @@ impl Domain {
         Ok(())
     }
 
-    pub fn entity_add_attribute(&mut self, entity_id: i32, name: &str) -> Result<Attribute, String> {
+    pub fn entity_add_attribute(&mut self, entity_id: i32, name: &str) -> Result<Attribute, DomainError> {
         let id = self.next_id().unwrap();
-        let entity = self.get_entity_mut(&entity_id).unwrap();
-        let attribute = Attribute::new(id, name, &"default");
-        entity.attributes.push(attribute.clone());
-        Ok(attribute)
+
+        match self.get_entity_mut(&entity_id) {
+            Ok(entity) => {
+                let attribute = Attribute::new(id, name, &"default");
+                entity.attributes.push(attribute.clone());
+                Ok(attribute)
+            }
+            Err(err) => Err(err)
+        }
     }
 }
 
