@@ -151,10 +151,15 @@ impl Attribute {
 }
 
 impl Domain {
-    pub fn next_id(&self) -> Result<i32, String> {
-        let entity_ids: Vec<i32> = self.entities.iter().map(|e| e.id).collect();
-        let id = entity_ids.iter().max().unwrap_or(&0).to_owned() + 1;
-        Ok(id)
+    pub fn next_id(&self) -> i32 {
+        let mut ids = Vec::<i32>::new();
+        ids.append(&mut self.entities.iter().map(|e| e.id).collect());
+        for entity in &self.entities {
+            ids.append(&mut entity.attributes.iter().map(|e| e.id).collect());
+            ids.append(&mut entity.references.iter().map(|e| e.id).collect());
+        }
+        let id = ids.iter().max().unwrap_or(&0).to_owned() + 1;
+        id
     }
 
     pub fn has_entity_name(&mut self, name: &str) -> bool {
@@ -227,7 +232,7 @@ impl Domain {
                 )
             )
         } else {
-            let entity = Entity::new(self.next_id().unwrap(), name);
+            let entity = Entity::new(self.next_id(), name);
             self.entities
                 .push(entity.clone());
             Ok(entity)
@@ -246,7 +251,7 @@ impl Domain {
     }
 
     pub fn entity_add_attribute(&mut self, entity_id: i32, name: &str) -> Result<Attribute, DomainError> {
-        let id = self.next_id().unwrap();
+        let id = self.next_id();
 
         match self.get_entity_mut(entity_id) {
             Ok(entity) => {
