@@ -74,8 +74,8 @@ pub fn model_to_fs(model: &ModelxDocument, path: &str) -> Result<(), ModelLoadEr
         path
     );
 
-    let model_header_doc_filename = format!("{}/modelx.json", path);
-    write_file(&model_header_doc_filename, &model.get_header().to_json());
+    let model_doc_filename = format!("{}/modelx.json", path);
+    write_file(&model_doc_filename, &model.to_json());
 
     /*
     let doc_filename = format!("{}/domain.json", path);
@@ -89,17 +89,16 @@ pub fn model_from_fs(path: &str) -> Result<ModelxDocument, ModelLoadError> {
     // XXX Error handling, assumption checking
 
     debug!("Reading model from directory '{}'", path);
-    let model_header_filename = format!("{}/modelx.json", path);
-    let model_header_path = Path::new(&model_header_filename);
-    let model_header_json = read_json_file(model_header_path);
-    debug!("model_from_fs : Deserializing model header JSON from {}", model_header_filename);
-    let model_header: DocumentHeader = match DocumentHeader::from_json(&model_header_json) {
+    let model_filename = format!("{}/modelx.json", path);
+    let model_path = Path::new(&model_filename);
+    let model_json = read_json_file(model_path);
+    debug!("model_from_fs : Deserializing model JSON from {}", model_filename);
+    let modeldoc: ModelxDocument = match ModelxDocument::from_json(&model_json) {
         Ok(res) => res,
         Err(err) => return Err(err)
     };
 
-    let modeldoc = ModelxDocument::new_from_header(&model_header);
-
+    /*
     let domain_filename = format!("{}/domain.json", path);
     let domain_path = Path::new(&domain_filename);
     let json = read_json_file(domain_path);
@@ -108,6 +107,7 @@ pub fn model_from_fs(path: &str) -> Result<ModelxDocument, ModelLoadError> {
         Ok(res) => res,
         Err(err) => return Err(err)
     };
+    */
 
     Ok(modeldoc)
 }

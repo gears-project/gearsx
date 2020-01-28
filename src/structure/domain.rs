@@ -40,7 +40,6 @@ impl fmt::Display for DomainError {
     }
 }
 
-// This is important for other errors to wrap this one.
 impl error::Error for DomainError {
     fn source(&self) -> Option<&(dyn error::Error + 'static)> {
         // Generic error, underlying cause isn't tracked.
