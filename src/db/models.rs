@@ -66,7 +66,7 @@ impl Project {
 
         debug!("initialize_new_project : {} : project id : {}", name, project.id);
 
-        let mut model = Document::create_model_document(conn, &crate::messages::ModelInput {
+        let model = Document::create_model_document(conn, &crate::messages::ModelInput {
             name: name.to_string(),
             description: None,
             project_id: project.id,
@@ -82,13 +82,7 @@ impl Project {
         let domain = Document::create_domain_document(conn, &project.id, "Domain".into())?;
         debug!("initialize_new_project : {} : domain id : {}", name, domain.id);
 
-        model.body.domain = Some(DocumentReference {
-            id: domain.id,
-            doctype: "domain".to_string(),
-        });
-        let _ = Document::save(conn, &model.as_raw())?;
         Ok(updated_project)
-
     }
 
     pub fn create(conn: &PgConnection, name: &str) -> Result<Project, DieselError> {
@@ -221,9 +215,10 @@ impl Document {
         documents::table.find(id).first::<Document>(conn)
     }
 
-    pub fn find_domains(conn: &PgConnection) -> Result<Vec<DomainDocument>, DieselError> {
+    pub fn find_domains(conn: &PgConnection, project_id: &Uuid) -> Result<Vec<DomainDocument>, DieselError> {
         Ok(documents::table
             .filter(documents::doctype.eq(&"domain"))
+            .filter(documents::project_id.eq(&project_id))
             .load::<Document>(conn)?
             .iter()
             .map(|res| res.as_domain().unwrap())

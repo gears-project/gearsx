@@ -1,4 +1,4 @@
-use super::common::{Document, DocumentReference};
+use super::common::{Document};
 use super::domain::{DomainDocument};
 use uuid::Uuid;
 use crate::graphql::schema;
@@ -23,30 +23,20 @@ impl ModelxDocument {
     fn body(&self) -> &Modelx {
         &self.body
     }
-}
-
-#[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
-pub struct Modelx {
-    pub domain: Option<DocumentReference>,
-}
-
-#[juniper::object(Context = schema::Context)]
-impl Modelx {
-    fn domain(&self, context: &schema::Context) -> juniper::FieldResult<Option<DomainDocument>> {
+    fn domains(&self, context: &schema::Context) -> juniper::FieldResult<Vec<DomainDocument>> {
         let mut conn = context.dbpool.get().unwrap();
-        if let Some(domain) = &self.domain {
-            let domain = DBDocument::by_id(&conn, &domain.id).unwrap().as_domain().unwrap();
-            Ok(Some(domain))
-        } else {
-            Ok(None)
-        }
+        let domains = DBDocument::find_domains(&conn, &self.project_id).unwrap();
+        Ok(domains)
     }
+}
+
+#[derive(GraphQLObject, Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
+pub struct Modelx {
 }
 
 impl Default for Modelx {
     fn default() -> Self {
         Self {
-            domain: None,
         }
     }
 }

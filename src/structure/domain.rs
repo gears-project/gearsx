@@ -3,6 +3,12 @@ use uuid::Uuid;
 
 pub type DomainDocument = Document<Domain>;
 
+pub enum DomainError {
+    EntityDoesNotExist(String),
+    AttributeDoesNotExist(String, String),
+    ReferenceDoesNotExist(String, String),
+}
+
 
 #[juniper::object]
 impl DomainDocument {
@@ -109,17 +115,55 @@ impl Attribute {
 impl Domain {
     pub fn next_id(&self) -> Result<i32, String> {
         let entity_ids: Vec<i32> = self.entities.iter().map(|e| e.id).collect();
-        Ok(entity_ids.iter().max().unwrap_or(&0).to_owned() + 1)
+        let id = entity_ids.iter().max().unwrap_or(&0).to_owned() + 1;
+        Ok(id)
     }
 
-    pub fn has_entity(&mut self, name: &str) -> bool {
-        match self.get_entity(name) {
+    pub fn has_entity_name(&mut self, name: &str) -> bool {
+        match self.get_entity_name(name) {
             Ok(_) => true,
             Err(_) => false,
         }
     }
 
-    pub fn get_entity(&mut self, name: &str) -> Result<&Entity, String> {
+    pub fn has_entity(&mut self, id: &i32) -> bool {
+        let res : Vec<&Entity>= self.entities
+            .iter()
+            .filter(|&e| { e.id.eq(id)})
+            .collect();
+        res.len() == 1
+    }
+
+    pub fn get_entity(&mut self, id: &i32) -> Result<&Entity, String> {
+        let mut res: Vec<&Entity> = self
+            .entities
+            .iter()
+            .filter({ |e| e.id.eq(id) })
+            .collect();
+        if res.len() == 1 {
+            Ok(&mut res[0])
+        } else {
+            Err(format!("Entity {} does not exist", id))
+        }
+    }
+
+    pub fn get_entity_mut(&mut self, id: &i32) -> Result<&mut Entity, String> {
+        let index = self
+            .entities
+            .iter()
+            .position({ |e| e.id.eq(id) });
+
+        match index {
+            Some(idx) => {
+                Ok(self.entities.get_mut(idx).unwrap())
+            },
+            None => {
+                Err(format!("Entity {} does not exist", id))
+            }
+        }
+    }
+
+    pub fn get_entity_name(&mut self, name: &str) -> Result<&Entity, String> {
         let mut res: Vec<&Entity> = self
             .entities
             .iter()
@@ -133,7 +177,7 @@ impl Domain {
     }
 
     pub fn add_entity(&mut self, name: &str) -> Result<(), String> {
-        if self.has_entity(&name) {
+        if self.has_entity_name(&name) {
             Err(format!("Entity {} already exists", name))
         } else {
             self.entities
@@ -152,22 +196,18 @@ impl Domain {
 
         Ok(())
     }
-}
 
-/*
-impl Default for Entity {
-    fn default() -> Self {
-        Entity {
-            name: "".to_owned(),
-            attributes: Attributes::new(),
-            references: References::new(),
-        }
+    pub fn entity_add_attribute(&mut self, entity_id: i32, name: &str) -> Result<(), String> {
+        let id = self.next_id().unwrap();
+        let entity = self.get_entity_mut(&entity_id).unwrap();
+        entity.attributes.push(
+            Attribute::new(id, name, &"default"));
+        Ok(())
     }
 }
-*/
 
 impl Entity {
-    pub fn new(id: i32, name: &str) -> Self {
+    fn new(id: i32, name: &str) -> Self {
         Entity {
             id: id,
             name: name.to_string().to_owned(),
@@ -207,6 +247,7 @@ impl Default for Domain {
 #[cfg(test)]
 mod test {
     use super::DomainDocument;
+    #[test]
     fn test_init_domain() {
         let doc = DomainDocument::new(
             &crate::util::naming::empty_uuid(),
