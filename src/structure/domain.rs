@@ -184,7 +184,7 @@ impl Domain {
         }
     }
 
-    pub fn get_entity_name(&mut self, name: &str) -> Result<&Entity, String> {
+    pub fn get_entity_name(&mut self, name: &str) -> Result<&Entity, DomainError> {
         let mut res: Vec<&Entity> = self
             .entities
             .iter()
@@ -193,7 +193,11 @@ impl Domain {
         if res.len() == 1 {
             Ok(&mut res[0])
         } else {
-            Err(format!("Entity {} does not exist", name))
+            Err(
+                DomainError::EntityDoesNotExist(
+                    format!("Entity {} does not exist", name)
+                )
+            )
         }
     }
 
