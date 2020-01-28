@@ -2,8 +2,8 @@ use crate::structure::common::{DocumentHeader, ModelLoadError};
 use crate::structure::modelx::{ModelxDocument};
 use crate::structure::domain::DomainDocument;
 
-use glob::glob_with;
-use glob::MatchOptions;
+
+
 
 use std::error::Error;
 use std::fs::File;
@@ -98,13 +98,13 @@ pub fn model_from_fs(path: &str) -> Result<ModelxDocument, ModelLoadError> {
         Err(err) => return Err(err)
     };
 
-    let mut modeldoc = ModelxDocument::new_from_header(&model_header);
+    let modeldoc = ModelxDocument::new_from_header(&model_header);
 
     let domain_filename = format!("{}/domain.json", path);
     let domain_path = Path::new(&domain_filename);
     let json = read_json_file(domain_path);
     debug!("model_from_fs : Deserializing domain JSON from {}", domain_filename);
-    let domain: DomainDocument = match DomainDocument::from_json(&json) {
+    let _domain: DomainDocument = match DomainDocument::from_json(&json) {
         Ok(res) => res,
         Err(err) => return Err(err)
     };
@@ -114,7 +114,7 @@ pub fn model_from_fs(path: &str) -> Result<ModelxDocument, ModelLoadError> {
 
 pub fn init_new_model_dir(path: &str) -> Result<(), ModelLoadError> {
     create_dir(path);
-    let mut model = ModelxDocument::new(&crate::util::naming::empty_uuid(), "modelx".into());
+    let model = ModelxDocument::new(&crate::util::naming::empty_uuid(), "modelx".into());
     model_to_fs(&model, &path)
 }
 

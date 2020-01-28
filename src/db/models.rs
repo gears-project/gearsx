@@ -2,7 +2,7 @@ use super::schema::{documents, projects};
 use crate::diesel::ExpressionMethods;
 use crate::diesel::QueryDsl;
 use crate::diesel::RunQueryDsl;
-use crate::structure::common::{RawDocument, DocumentReference};
+use crate::structure::common::{RawDocument};
 use crate::structure::modelx::{Modelx, ModelxDocument};
 use crate::structure::domain::{Domain, DomainDocument};
 use crate::messages::{QueryPage};
