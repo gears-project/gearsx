@@ -76,7 +76,7 @@ where
         self.id = header.id.clone();
         self.name = header.name.clone();
         self.doctype = header.doctype.clone();
-        self.version = header.version.clone();
+        self.version = header.version;
     }
 
     pub fn as_raw(&self) -> RawDocument {
@@ -168,7 +168,7 @@ where
     }
 
     pub fn change(&mut self) -> i32 {
-        self.version = self.version + 1;
+        self.version += 1;
         self.version
     }
 }

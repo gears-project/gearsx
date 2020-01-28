@@ -79,7 +79,7 @@ impl Project {
             .set(&project)
             .get_result::<Project>(conn)?;
 
-        let domain = Document::create_domain_document(conn, &project.id, "Domain".into())?;
+        let domain = Document::create_domain_document(conn, &project.id, "Domain")?;
         debug!("initialize_new_project : {} : domain id : {}", name, domain.id);
 
         Ok(updated_project)
@@ -105,7 +105,7 @@ impl Project {
     }
 
     pub fn find(conn: &PgConnection, paging: Option<QueryPage>) -> Result<Vec<Project>, DieselError> {
-        let p = paging.unwrap_or(QueryPage::default());
+        let p = paging.unwrap_or_default();
         if let Some(limit) = p.limit {
             projects::table.limit(limit.into()).offset(p.offset.unwrap_or(0).into()).load::<Project>(conn)
         } else {

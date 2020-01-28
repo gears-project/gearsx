@@ -121,8 +121,8 @@ impl Attribute {
     pub fn new(id: i32, name: &str, attr_type: &str) -> Self {
         Attribute {
             id: id,
-            name: name.to_string().clone(),
-            vtype: attr_type.to_string().clone(),
+            name: name.to_string(),
+            vtype: attr_type.to_string(),
             default: "".to_string(),
             validations: Validations::new(),
         }
@@ -137,28 +137,25 @@ impl Domain {
     }
 
     pub fn has_entity_name(&mut self, name: &str) -> bool {
-        match self.get_entity_name(name) {
-            Ok(_) => true,
-            Err(_) => false,
-        }
+        self.get_entity_name(name).is_ok()
     }
 
-    pub fn has_entity(&mut self, id: &i32) -> bool {
+    pub fn has_entity(&mut self, id: i32) -> bool {
         let res : Vec<&Entity>= self.entities
             .iter()
-            .filter(|&e| { e.id.eq(id)})
+            .filter(|&e| { e.id.eq(&id)})
             .collect();
         res.len() == 1
     }
 
-    pub fn get_entity(&mut self, id: &i32) -> Result<&Entity, DomainError> {
-        let mut res: Vec<&Entity> = self
+    pub fn get_entity(&mut self, id: i32) -> Result<&Entity, DomainError> {
+        let res: Vec<&Entity> = self
             .entities
             .iter()
-            .filter({ |e| e.id.eq(id) })
+            .filter({ |e| e.id.eq(&id) })
             .collect();
         if res.len() == 1 {
-            Ok(&mut res[0])
+            Ok(&res[0])
         } else {
             Err(
                 DomainError::EntityDoesNotExist(format!("Entity id:{} does not exist", id))
@@ -166,11 +163,11 @@ impl Domain {
         }
     }
 
-    pub fn get_entity_mut(&mut self, id: &i32) -> Result<&mut Entity, DomainError> {
+    pub fn get_entity_mut(&mut self, id: i32) -> Result<&mut Entity, DomainError> {
         let index = self
             .entities
             .iter()
-            .position({ |e| e.id.eq(id) });
+            .position({ |e| e.id.eq(&id) });
 
         match index {
             Some(idx) => {
@@ -185,13 +182,13 @@ impl Domain {
     }
 
     pub fn get_entity_name(&mut self, name: &str) -> Result<&Entity, DomainError> {
-        let mut res: Vec<&Entity> = self
+        let res: Vec<&Entity> = self
             .entities
             .iter()
             .filter({ |e| e.name.eq(name) })
             .collect();
         if res.len() == 1 {
-            Ok(&mut res[0])
+            Ok(&res[0])
         } else {
             Err(
                 DomainError::EntityDoesNotExist(
@@ -230,7 +227,7 @@ impl Domain {
     pub fn entity_add_attribute(&mut self, entity_id: i32, name: &str) -> Result<Attribute, DomainError> {
         let id = self.next_id().unwrap();
 
-        match self.get_entity_mut(&entity_id) {
+        match self.get_entity_mut(entity_id) {
             Ok(entity) => {
                 let attribute = Attribute::new(id, name, &"default");
                 entity.attributes.push(attribute.clone());
@@ -245,7 +242,7 @@ impl Entity {
     fn new(id: i32, name: &str) -> Self {
         Entity {
             id: id,
-            name: name.to_string().to_owned(),
+            name: name.to_string(),
             attributes: Attributes::new(),
             references: References::new(),
         }
