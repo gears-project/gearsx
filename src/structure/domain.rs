@@ -10,11 +10,33 @@ pub enum DomainError {
     EntityDoesNotExist(String),
     AttributeDoesNotExist(String, String),
     ReferenceDoesNotExist(String, String),
+    EntityAlreadyExists(String),
+    AttributeAlreadyExists(String, String),
+    ReferenceAlreadyExists(String, String),
 }
 
 impl fmt::Display for DomainError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "invalid first item to double")
+        match self {
+            DomainError::EntityDoesNotExist(e) => {
+                write!(f, "Entity {} does not exist", e)
+            },
+            DomainError::AttributeDoesNotExist(e, a) => {
+                write!(f, "Attribute {} does not exist in Enitity {}", a, e)
+            },
+            DomainError::ReferenceDoesNotExist(e, r) => {
+                write!(f, "Reference {} does not exist in Entity {}", r, e)
+            },
+            DomainError::EntityAlreadyExists(e) => {
+                write!(f, "Entity {} already exists", e)
+            },
+            DomainError::AttributeAlreadyExists(e, a) => {
+                write!(f, "Attribute {} already exists in Enitity {}", a, e)
+            },
+            DomainError::ReferenceAlreadyExists(e, r) => {
+                write!(f, "Reference {} already exists in Entity {}", r, e)
+            },
+        }
     }
 }
 
@@ -25,7 +47,6 @@ impl error::Error for DomainError {
         None
     }
 }
-
 
 #[juniper::object]
 impl DomainDocument {
