@@ -176,13 +176,14 @@ impl Domain {
         }
     }
 
-    pub fn add_entity(&mut self, name: &str) -> Result<(), String> {
+    pub fn add_entity(&mut self, name: &str) -> Result<Entity, String> {
         if self.has_entity_name(&name) {
             Err(format!("Entity {} already exists", name))
         } else {
+            let entity = Entity::new(self.next_id().unwrap(), name);
             self.entities
-                .push(Entity::new(self.next_id().unwrap(), name));
-            Ok(())
+                .push(entity.clone());
+            Ok(entity)
         }
     }
 
@@ -197,12 +198,12 @@ impl Domain {
         Ok(())
     }
 
-    pub fn entity_add_attribute(&mut self, entity_id: i32, name: &str) -> Result<(), String> {
+    pub fn entity_add_attribute(&mut self, entity_id: i32, name: &str) -> Result<Attribute, String> {
         let id = self.next_id().unwrap();
         let entity = self.get_entity_mut(&entity_id).unwrap();
-        entity.attributes.push(
-            Attribute::new(id, name, &"default"));
-        Ok(())
+        let attribute = Attribute::new(id, name, &"default");
+        entity.attributes.push(attribute.clone());
+        Ok(attribute)
     }
 }
 

@@ -3,7 +3,7 @@ use juniper::{FieldResult, RootNode};
 
 use crate::db::connection::Pool;
 use crate::db::models::{Document as DBDocument, Project as DBProject};
-use crate::structure::domain::DomainDocument;
+use crate::structure::domain::{DomainDocument, Entity, Attribute};
 use crate::structure::modelx::ModelxDocument;
 use crate::messages::*;
 
@@ -75,12 +75,20 @@ impl MutationRoot {
     fn domain_add_entity(
         context: &Context,
         input: DomainAddEntityInput,
-    ) -> FieldResult<DomainDocument> {
+    ) -> FieldResult<Entity> {
         let mut conn = context.dbpool.get()?;
         let mut doc = DBDocument::by_id(&conn, &input.domain_id)?.as_domain()?;
-        let _ = doc.body.add_entity(&input.name)?;
+        let entity = doc.body.add_entity(&input.name)?;
         let _ = DBDocument::save(&conn, &doc.as_raw());
-        Ok(doc)
+        Ok(entity)
+    }
+
+    fn entity_add_attribute(context: &Context, input: AddAttributeToEntity) -> FieldResult<Attribute> {
+        let mut conn = context.dbpool.get()?;
+        let mut doc = DBDocument::by_id(&conn, &input.domain_id)?.as_domain()?;
+        let attribute = doc.body.entity_add_attribute(input.entity_id, &input.name)?;
+        let _ = DBDocument::save(&conn, &doc.as_raw());
+        Ok(attribute)
     }
 
     fn delete_project(context: &Context, input: ProjectIdInput) -> FieldResult<i32> {

@@ -46,3 +46,11 @@ pub struct DomainAddEntityInput {
 pub struct ProjectIdInput {
     pub project_id: Uuid,
 }
+
+#[derive(juniper::GraphQLInputObject)]
+pub struct AddAttributeToEntity {
+    pub project_id: Uuid,
+    pub domain_id: Uuid,
+    pub entity_id: i32,
+    pub name: String,
+}
