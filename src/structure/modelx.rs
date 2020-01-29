@@ -1,8 +1,8 @@
-use super::common::{Document};
-use super::domain::{DomainDocument};
-use uuid::Uuid;
+use super::common::Document;
+use super::domain::DomainDocument;
+use crate::db::models::Document as DBDocument;
 use crate::graphql::schema;
-use crate::db::models::{Document as DBDocument};
+use uuid::Uuid;
 
 pub type ModelxDocument = Document<Modelx>;
 
@@ -31,12 +31,10 @@ impl ModelxDocument {
 }
 
 #[derive(GraphQLObject, Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
-pub struct Modelx {
-}
+pub struct Modelx {}
 
 impl Default for Modelx {
     fn default() -> Self {
-        Self {
-        }
+        Self {}
     }
 }

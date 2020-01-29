@@ -2,19 +2,17 @@ use super::schema::{documents, projects};
 use crate::diesel::ExpressionMethods;
 use crate::diesel::QueryDsl;
 use crate::diesel::RunQueryDsl;
-use crate::structure::common::{RawDocument};
-use crate::structure::modelx::{Modelx, ModelxDocument};
+use crate::graphql::schema;
+use crate::messages::QueryPage;
+use crate::structure::common::RawDocument;
 use crate::structure::domain::{Domain, DomainDocument};
-use crate::messages::{QueryPage};
+use crate::structure::modelx::{Modelx, ModelxDocument};
 use diesel::pg::PgConnection;
 use diesel::result::Error as DieselError;
 use serde_json;
 use uuid::Uuid;
-use crate::graphql::schema;
 
-#[derive(
-    Serialize, Deserialize, Debug, AsChangeset, Queryable, Insertable, Identifiable,
-)]
+#[derive(Serialize, Deserialize, Debug, AsChangeset, Queryable, Insertable, Identifiable)]
 #[table_name = "projects"]
 pub struct Project {
     pub id: Uuid,
@@ -64,15 +62,24 @@ impl Project {
 
         let mut project = Self::create(conn, &name)?;
 
-        debug!("initialize_new_project : {} : project id : {}", name, project.id);
+        debug!(
+            "initialize_new_project : {} : project id : {}",
+            name, project.id
+        );
 
-        let model = Document::create_model_document(conn, &crate::messages::ModelInput {
-            name: name.to_string(),
-            description: None,
-            project_id: project.id,
-        })?;
+        let model = Document::create_model_document(
+            conn,
+            &crate::messages::ModelInput {
+                name: name.to_string(),
+                description: None,
+                project_id: project.id,
+            },
+        )?;
 
-        debug!("initialize_new_project : {} : model id : {}", name, model.id);
+        debug!(
+            "initialize_new_project : {} : model id : {}",
+            name, model.id
+        );
 
         project.model_id = model.id.into();
         let updated_project = diesel::update(projects::table)
@@ -80,7 +87,10 @@ impl Project {
             .get_result::<Project>(conn)?;
 
         let domain = Document::create_domain_document(conn, &project.id, "Domain")?;
-        debug!("initialize_new_project : {} : domain id : {}", name, domain.id);
+        debug!(
+            "initialize_new_project : {} : domain id : {}",
+            name, domain.id
+        );
 
         Ok(updated_project)
     }
@@ -104,10 +114,16 @@ impl Project {
         projects::table.find(id).first::<Project>(conn)
     }
 
-    pub fn find(conn: &PgConnection, paging: Option<QueryPage>) -> Result<Vec<Project>, DieselError> {
+    pub fn find(
+        conn: &PgConnection,
+        paging: Option<QueryPage>,
+    ) -> Result<Vec<Project>, DieselError> {
         let p = paging.unwrap_or_default();
         if let Some(limit) = p.limit {
-            projects::table.limit(limit.into()).offset(p.offset.unwrap_or(0).into()).load::<Project>(conn)
+            projects::table
+                .limit(limit.into())
+                .offset(p.offset.unwrap_or(0).into())
+                .load::<Project>(conn)
         } else {
             projects::table.load::<Project>(conn)
         }
@@ -215,7 +231,10 @@ impl Document {
         documents::table.find(id).first::<Document>(conn)
     }
 
-    pub fn find_domains(conn: &PgConnection, project_id: &Uuid) -> Result<Vec<DomainDocument>, DieselError> {
+    pub fn find_domains(
+        conn: &PgConnection,
+        project_id: &Uuid,
+    ) -> Result<Vec<DomainDocument>, DieselError> {
         Ok(documents::table
             .filter(documents::doctype.eq(&"domain"))
             .filter(documents::project_id.eq(&project_id))

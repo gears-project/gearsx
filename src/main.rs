@@ -18,8 +18,8 @@ extern crate log;
 
 mod db;
 mod graphql;
-mod structure;
 mod messages;
+mod structure;
 mod util;
 
 use actix_cors::Cors;

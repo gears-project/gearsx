@@ -1,3 +1,4 @@
+use crate::messages::DocumentProperties;
 use serde;
 use serde_json;
 use serde_yaml;
@@ -49,6 +50,13 @@ where
             version: 0,
             body: <T>::default(),
         }
+    }
+
+    pub fn change_props(&mut self, props: &DocumentProperties) -> &Self {
+        if let Some(name) = &props.name {
+            self.name = name.clone();
+        }
+        self
     }
 
     pub fn as_raw(&self) -> RawDocument {

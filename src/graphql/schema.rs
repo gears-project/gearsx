@@ -3,9 +3,9 @@ use juniper::{FieldResult, RootNode};
 
 use crate::db::connection::Pool;
 use crate::db::models::{Document as DBDocument, Project as DBProject};
-use crate::structure::domain::{DomainDocument, Entity, Attribute};
-use crate::structure::modelx::ModelxDocument;
 use crate::messages::*;
+use crate::structure::domain::{Attribute, DomainDocument, Entity};
+use crate::structure::modelx::ModelxDocument;
 
 pub struct Context {
     pub dbpool: Pool,
@@ -66,16 +66,10 @@ impl MutationRoot {
     fn add_model(context: &Context, input: ModelInput) -> FieldResult<ModelxDocument> {
         debug!("add_model for project {}", input.project_id);
         let mut conn = context.dbpool.get()?;
-        Ok(DBDocument::create_model_document(
-            &conn,
-            &input,
-        )?)
+        Ok(DBDocument::create_model_document(&conn, &input)?)
     }
 
-    fn domain_add_entity(
-        context: &Context,
-        input: DomainAddEntityInput,
-    ) -> FieldResult<Entity> {
+    fn domain_add_entity(context: &Context, input: DomainAddEntityInput) -> FieldResult<Entity> {
         let mut conn = context.dbpool.get()?;
         let mut doc = DBDocument::by_id(&conn, &input.domain_id)?.as_domain()?;
         let entity = doc.body.add_entity(&input.name)?;
@@ -83,10 +77,15 @@ impl MutationRoot {
         Ok(entity)
     }
 
-    fn entity_add_attribute(context: &Context, input: AddAttributeToEntity) -> FieldResult<Attribute> {
+    fn entity_add_attribute(
+        context: &Context,
+        input: AddAttributeToEntity,
+    ) -> FieldResult<Attribute> {
         let mut conn = context.dbpool.get()?;
         let mut doc = DBDocument::by_id(&conn, &input.domain_id)?.as_domain()?;
-        let attribute = doc.body.entity_add_attribute(input.entity_id, &input.name)?;
+        let attribute = doc
+            .body
+            .entity_add_attribute(input.entity_id, &input.name)?;
         let _ = DBDocument::save(&conn, &doc.as_raw());
         Ok(attribute)
     }

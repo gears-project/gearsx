@@ -1,12 +1,12 @@
-use crate::structure::common::{ModelLoadError};
-use crate::structure::modelx::{ModelxDocument};
+use crate::structure::common::ModelLoadError;
 use crate::structure::domain::DomainDocument;
+use crate::structure::modelx::ModelxDocument;
 
+use std;
 use std::error::Error;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
-use std;
 
 fn read_json_file(path: &Path) -> String {
     let display = path.display();
@@ -66,9 +66,7 @@ pub fn model_to_fs(model: &ModelxDocument, path: &str) -> Result<(), ModelLoadEr
 
     debug!(
         "Writing model id:'{}', version:'{}' to directory '{}'",
-        model.id,
-        model.version,
-        path
+        model.id, model.version, path
     );
 
     let model_doc_filename = format!("{}/modelx.json", path);
@@ -89,10 +87,13 @@ pub fn model_from_fs(path: &str) -> Result<ModelxDocument, ModelLoadError> {
     let model_filename = format!("{}/modelx.json", path);
     let model_path = Path::new(&model_filename);
     let model_json = read_json_file(model_path);
-    debug!("model_from_fs : Deserializing model JSON from {}", model_filename);
+    debug!(
+        "model_from_fs : Deserializing model JSON from {}",
+        model_filename
+    );
     let modeldoc: ModelxDocument = match ModelxDocument::from_json(&model_json) {
         Ok(res) => res,
-        Err(err) => return Err(err)
+        Err(err) => return Err(err),
     };
 
     /*

@@ -1,19 +1,20 @@
 use super::common::{Document, DocumentReference};
-use uuid::Uuid;
+use crate::messages::*;
 use std::error;
 use std::fmt;
+use uuid::Uuid;
 
 pub type DomainDocument = Document<Domain>;
 
 impl Default for DomainDocument {
     fn default() -> Self {
-        Self { 
+        Self {
             id: Uuid::new_v4(),
             project_id: crate::util::naming::empty_uuid(),
             name: "New Domain".to_owned(),
             doctype: "domain".to_owned(),
             version: 0,
-            body: Domain::default()
+            body: Domain::default(),
         }
     }
 }
@@ -31,24 +32,12 @@ pub enum DomainError {
 impl fmt::Display for DomainError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            DomainError::EntityDoesNotExist(e) => {
-                write!(f, "id:{}", e)
-            },
-            DomainError::AttributeDoesNotExist(e, a) => {
-                write!(f, "id:{}/id:{}", e, a)
-            },
-            DomainError::ReferenceDoesNotExist(e, r) => {
-                write!(f, "id:{}/id:{}", e, r)
-            },
-            DomainError::EntityAlreadyExists(e) => {
-                write!(f, "{}", e)
-            },
-            DomainError::AttributeAlreadyExists(e, a) => {
-                write!(f, "id:{}/{}", e, a)
-            },
-            DomainError::ReferenceAlreadyExists(e, r) => {
-                write!(f, "id:{}/{}", e, r)
-            },
+            DomainError::EntityDoesNotExist(e) => write!(f, "id:{}", e),
+            DomainError::AttributeDoesNotExist(e, a) => write!(f, "id:{}/id:{}", e, a),
+            DomainError::ReferenceDoesNotExist(e, r) => write!(f, "id:{}/id:{}", e, r),
+            DomainError::EntityAlreadyExists(e) => write!(f, "{}", e),
+            DomainError::AttributeAlreadyExists(e, a) => write!(f, "id:{}/{}", e, a),
+            DomainError::ReferenceAlreadyExists(e, r) => write!(f, "id:{}/{}", e, r),
         }
     }
 }
@@ -179,43 +168,25 @@ impl Domain {
     }
 
     pub fn has_entity(&mut self, id: i32) -> bool {
-        let res : Vec<&Entity>= self.entities
-            .iter()
-            .filter(|&e| { e.id.eq(&id)})
-            .collect();
+        let res: Vec<&Entity> = self.entities.iter().filter(|&e| e.id.eq(&id)).collect();
         res.len() == 1
     }
 
     pub fn get_entity(&mut self, id: i32) -> Result<&Entity, DomainError> {
-        let res: Vec<&Entity> = self
-            .entities
-            .iter()
-            .filter({ |e| e.id.eq(&id) })
-            .collect();
+        let res: Vec<&Entity> = self.entities.iter().filter({ |e| e.id.eq(&id) }).collect();
         if res.len() == 1 {
             Ok(&res[0])
         } else {
-            Err(
-                DomainError::EntityDoesNotExist(id)
-            )
+            Err(DomainError::EntityDoesNotExist(id))
         }
     }
 
     pub fn get_entity_mut(&mut self, id: i32) -> Result<&mut Entity, DomainError> {
-        let index = self
-            .entities
-            .iter()
-            .position({ |e| e.id.eq(&id) });
+        let index = self.entities.iter().position({ |e| e.id.eq(&id) });
 
         match index {
-            Some(idx) => {
-                Ok(self.entities.get_mut(idx).unwrap())
-            },
-            None => {
-                Err(
-                    DomainError::EntityDoesNotExist(id)
-                )
-            }
+            Some(idx) => Ok(self.entities.get_mut(idx).unwrap()),
+            None => Err(DomainError::EntityDoesNotExist(id)),
         }
     }
 
@@ -228,21 +199,16 @@ impl Domain {
         if res.len() == 1 {
             Ok(&res[0])
         } else {
-            Err(
-                DomainError::EntityDoesNotExist(0)
-            )
+            Err(DomainError::EntityDoesNotExist(0))
         }
     }
 
     pub fn add_entity(&mut self, name: &str) -> Result<Entity, DomainError> {
         if self.has_entity_name(&name) {
-            Err(
-                DomainError::EntityAlreadyExists((&name).to_string())
-            )
+            Err(DomainError::EntityAlreadyExists((&name).to_string()))
         } else {
             let entity = Entity::new(self.next_id(), name);
-            self.entities
-                .push(entity.clone());
+            self.entities.push(entity.clone());
             Ok(entity)
         }
     }
@@ -250,23 +216,21 @@ impl Domain {
     pub fn remove_entity(&mut self, id: i32) -> Result<(), DomainError> {
         let entities = self.entities.clone();
 
-        let index = entities
-            .into_iter()
-            .position({ |e| e.id.eq(&id) });
+        let index = entities.into_iter().position({ |e| e.id.eq(&id) });
         match index {
             Some(idx) => {
                 &mut self.entities.remove(idx);
                 Ok(())
             }
-            None => {
-                Err(
-                    DomainError::EntityDoesNotExist(id)
-                )
-            }
+            None => Err(DomainError::EntityDoesNotExist(id)),
         }
     }
 
-    pub fn entity_add_attribute(&mut self, entity_id: i32, name: &str) -> Result<Attribute, DomainError> {
+    pub fn entity_add_attribute(
+        &mut self,
+        entity_id: i32,
+        name: &str,
+    ) -> Result<Attribute, DomainError> {
         let id = self.next_id();
 
         match self.get_entity_mut(entity_id) {
@@ -275,7 +239,7 @@ impl Domain {
                 entity.attributes.push(attribute.clone());
                 Ok(attribute)
             }
-            Err(err) => Err(err)
+            Err(err) => Err(err),
         }
     }
 }
@@ -323,13 +287,7 @@ mod test {
     use super::DomainDocument;
     #[test]
     fn test_init_domain() {
-        let doc = DomainDocument::new(
-            &crate::util::naming::empty_uuid(),
-            "domain".into()
-        );
+        let doc = DomainDocument::new(&crate::util::naming::empty_uuid(), "domain".into());
         assert_eq!(doc.doctype, "domain");
-            
     }
-
-
 }
