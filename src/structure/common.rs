@@ -51,34 +51,6 @@ where
         }
     }
 
-    pub fn new_from_header(header: &DocumentHeader) -> Self {
-        Self {
-            id: header.id.clone(),
-            project_id: header.project_id.clone(),
-            name: header.name.clone(),
-            doctype: header.doctype.clone(),
-            version: header.version.clone(),
-            body: <T>::default(),
-        }
-    }
-
-    pub fn get_header(&self) -> DocumentHeader {
-        DocumentHeader {
-            id: self.id.clone(),
-            project_id: self.project_id.clone(),
-            name: self.name.clone(),
-            doctype: self.doctype.clone(),
-            version: self.version.clone(),
-        }
-    }
-
-    pub fn set_header(&mut self, header: &DocumentHeader) -> () {
-        self.id = header.id.clone();
-        self.name = header.name.clone();
-        self.doctype = header.doctype.clone();
-        self.version = header.version;
-    }
-
     pub fn as_raw(&self) -> RawDocument {
         RawDocument {
             id: &self.id,
@@ -173,7 +145,6 @@ where
     }
 }
 
-/*
 impl<T> Default for Document<T>
 where
     T: Default,
@@ -181,81 +152,11 @@ where
     fn default() -> Self {
         Self {
             id: Uuid::new_v4(),
-            project_id: Uuid::new_v4(),
+            project_id: crate::util::naming::empty_uuid(),
             name: "default".to_owned(),
             doctype: "none".to_owned(),
             version: 0,
             body: <T>::default(),
-        }
-    }
-}
-*/
-
-//
-// This struct only exists to make the top-level Model object serializable into a project's
-// model.json
-//
-
-#[derive(Serialize, Deserialize, Debug, Clone, Eq, PartialEq)]
-pub struct DocumentHeader {
-    pub id: Uuid,
-    pub project_id: Uuid,
-    pub name: String,
-    pub doctype: String,
-    pub version: i32,
-}
-
-impl DocumentHeader {
-    /// Return a string representation of the DocumentHeader
-    ///
-    pub fn to_string(&self) -> String {
-        format!("document {}", self.id)
-    }
-
-    /// Return an indented JSON representation of the DocumentHeader
-    ///
-    /// partof: SPC-serialization-json
-    pub fn to_json(&self) -> String {
-        serde_json::to_string_pretty(&self).unwrap()
-    }
-
-    /// Return a compact JSON representation of the DocumentHeader
-    ///
-    /// partof: SPC-serialization-json
-    pub fn to_json_compact(&self) -> String {
-        serde_json::to_string(&self).unwrap()
-    }
-
-    /// Initialize a DocumentHeader from a JSON string
-    ///
-    /// partof: SPC-serialization-json
-    pub fn from_json(s: &str) -> Result<Self, ModelLoadError> {
-        match serde_json::from_str(s) {
-            Ok(res) => Ok(res),
-            Err(err) => {
-                let msg = format!("{}", err);
-                Err(ModelLoadError::BadStructure(msg))
-            }
-        }
-    }
-
-    /// Return a YAML representation of the DocumentHeader
-    ///
-    /// partof: SPC-serialization-yaml
-    pub fn to_yaml(&self) -> String {
-        serde_yaml::to_string(&self).unwrap()
-    }
-
-    /// Initialize a DocumentHeader from a JSON string
-    ///
-    /// partof: SPC-serialization-yaml
-    pub fn from_yaml(s: &str) -> Result<Self, ModelLoadError> {
-        match serde_yaml::from_str(s) {
-            Ok(res) => Ok(res),
-            Err(err) => {
-                let msg = format!("{}", err);
-                Err(ModelLoadError::BadStructure(msg))
-            }
         }
     }
 }

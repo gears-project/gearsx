@@ -5,36 +5,36 @@ use std::fmt;
 
 pub type DomainDocument = Document<Domain>;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum DomainError {
-    EntityDoesNotExist(String),
-    AttributeDoesNotExist(String, String),
-    ReferenceDoesNotExist(String, String),
+    EntityDoesNotExist(i32),
+    AttributeDoesNotExist(i32, i32),
+    ReferenceDoesNotExist(i32, i32),
     EntityAlreadyExists(String),
-    AttributeAlreadyExists(String, String),
-    ReferenceAlreadyExists(String, String),
+    AttributeAlreadyExists(i32, String),
+    ReferenceAlreadyExists(i32, String),
 }
 
 impl fmt::Display for DomainError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             DomainError::EntityDoesNotExist(e) => {
-                write!(f, "Entity {} does not exist", e)
+                write!(f, "id:{}", e)
             },
             DomainError::AttributeDoesNotExist(e, a) => {
-                write!(f, "Attribute {} does not exist in Enitity {}", a, e)
+                write!(f, "id:{}/id:{}", e, a)
             },
             DomainError::ReferenceDoesNotExist(e, r) => {
-                write!(f, "Reference {} does not exist in Entity {}", r, e)
+                write!(f, "id:{}/id:{}", e, r)
             },
             DomainError::EntityAlreadyExists(e) => {
-                write!(f, "Entity {} already exists", e)
+                write!(f, "{}", e)
             },
             DomainError::AttributeAlreadyExists(e, a) => {
-                write!(f, "Attribute {} already exists in Enitity {}", a, e)
+                write!(f, "id:{}/{}", e, a)
             },
             DomainError::ReferenceAlreadyExists(e, r) => {
-                write!(f, "Reference {} already exists in Entity {}", r, e)
+                write!(f, "id:{}/{}", e, r)
             },
         }
     }
@@ -183,7 +183,7 @@ impl Domain {
             Ok(&res[0])
         } else {
             Err(
-                DomainError::EntityDoesNotExist(format!("Entity id:{} does not exist", id))
+                DomainError::EntityDoesNotExist(id)
             )
         }
     }
@@ -200,7 +200,7 @@ impl Domain {
             },
             None => {
                 Err(
-                    DomainError::EntityDoesNotExist(format!("Entity id:{} does not exist", id))
+                    DomainError::EntityDoesNotExist(id)
                 )
             }
         }
@@ -216,9 +216,7 @@ impl Domain {
             Ok(&res[0])
         } else {
             Err(
-                DomainError::EntityDoesNotExist(
-                    format!("Entity {} does not exist", name)
-                )
+                DomainError::EntityDoesNotExist(0)
             )
         }
     }
@@ -226,9 +224,7 @@ impl Domain {
     pub fn add_entity(&mut self, name: &str) -> Result<Entity, DomainError> {
         if self.has_entity_name(&name) {
             Err(
-                DomainError::EntityDoesNotExist(
-                    format!("Entity {} already exists", name)
-                )
+                DomainError::EntityAlreadyExists((&name).to_string())
             )
         } else {
             let entity = Entity::new(self.next_id(), name);
@@ -238,15 +234,23 @@ impl Domain {
         }
     }
 
-    pub fn remove_entity(&mut self, entity: &str) -> Result<(), String> {
+    pub fn remove_entity(&mut self, id: i32) -> Result<(), DomainError> {
         let entities = self.entities.clone();
 
-        self.entities = entities
+        let index = entities
             .into_iter()
-            .filter({ |e| e.name.ne(entity) })
-            .collect();
-
-        Ok(())
+            .position({ |e| e.id.eq(&id) });
+        match index {
+            Some(idx) => {
+                &mut self.entities.remove(idx);
+                Ok(())
+            }
+            None => {
+                Err(
+                    DomainError::EntityDoesNotExist(id)
+                )
+            }
+        }
     }
 
     pub fn entity_add_attribute(&mut self, entity_id: i32, name: &str) -> Result<Attribute, DomainError> {

@@ -1,9 +1,6 @@
-use crate::structure::common::{DocumentHeader, ModelLoadError};
+use crate::structure::common::{ModelLoadError};
 use crate::structure::modelx::{ModelxDocument};
 use crate::structure::domain::DomainDocument;
-
-
-
 
 use std::error::Error;
 use std::fs::File;
