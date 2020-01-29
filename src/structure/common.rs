@@ -145,6 +145,7 @@ where
     }
 }
 
+/*
 impl<T> Default for Document<T>
 where
     T: Default,
@@ -159,4 +160,6 @@ where
             body: <T>::default(),
         }
     }
+
 }
+*/

@@ -5,6 +5,19 @@ use std::fmt;
 
 pub type DomainDocument = Document<Domain>;
 
+impl Default for DomainDocument {
+    fn default() -> Self {
+        Self { 
+            id: Uuid::new_v4(),
+            project_id: crate::util::naming::empty_uuid(),
+            name: "New Domain".to_owned(),
+            doctype: "domain".to_owned(),
+            version: 0,
+            body: Domain::default()
+        }
+    }
+}
+
 #[derive(Debug, PartialEq)]
 pub enum DomainError {
     EntityDoesNotExist(i32),
