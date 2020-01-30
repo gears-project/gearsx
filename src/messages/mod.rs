@@ -1,4 +1,5 @@
 use uuid::Uuid;
+use crate::structure::data::{VTypeString, VTypeBoolean, VTypeInteger};
 
 #[derive(juniper::GraphQLInputObject)]
 pub struct QueryPage {
@@ -60,9 +61,27 @@ pub struct ProjectIdInput {
 }
 
 #[derive(juniper::GraphQLInputObject)]
+pub struct AttributeInputString {
+    pub default: Option<String>,
+}
+
+#[derive(juniper::GraphQLInputObject)]
+pub struct AttributeInputInteger {
+    pub default: Option<i32>,
+}
+
+#[derive(juniper::GraphQLInputObject)]
+pub struct AttributeInputBoolean {
+    pub default: Option<bool>,
+}
+
+#[derive(juniper::GraphQLInputObject)]
 pub struct AddAttributeToEntity {
     pub project_id: Uuid,
     pub domain_id: Uuid,
     pub entity_id: i32,
     pub name: String,
+    pub as_string: Option<AttributeInputString>,
+    pub as_boolean: Option<AttributeInputBoolean>,
+    pub as_integer: Option<AttributeInputInteger>,
 }
