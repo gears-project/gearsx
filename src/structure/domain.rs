@@ -1,5 +1,5 @@
 use super::common::{Document, DocumentReference};
-use crate::messages::*;
+use super::data::*;
 use std::error;
 use std::fmt;
 use uuid::Uuid;
