@@ -27,7 +27,7 @@
                         "id": 2,
                         "name": "title",
                         "vtype": {
-                            "type": "VTypeString",
+                            "type": "string",
                             "default": "No title"
                         },
                         "validations": [
@@ -37,7 +37,7 @@
                         "id": 3,
                         "name": "body",
                         "vtype": {
-                            "type": "VTypeString",
+                            "type": "string",
                             "default": "No title"
                         },
                         "validations": [
@@ -47,7 +47,7 @@
                         "id": 4,
                         "name": "created",
                         "vtype": {
-                            "type": "VTypeString",
+                            "type": "string",
                             "default": "No title"
                         },
                         "validations": [
@@ -71,7 +71,7 @@
                         "id": 7,
                         "name": "post",
                         "vtype": {
-                            "type": "VTypeString",
+                            "type": "string",
                             "default": "No title"
                         },
                         "storage": "persistent",

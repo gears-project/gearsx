@@ -1,8 +1,11 @@
 #[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
 #[serde(tag = "type")]
 pub enum VType {
+    #[serde(rename = "string")]
     VTypeString(VTypeString),
+    #[serde(rename = "boolean")]
     VTypeBoolean(VTypeBoolean),
+    #[serde(rename = "integer")]
     VTypeInteger(VTypeInteger),
 }
 
