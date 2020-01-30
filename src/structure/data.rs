@@ -1,21 +1,18 @@
 #[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
+#[serde(tag = "type")]
 pub enum VType {
     VTypeString(VTypeString),
     VTypeBoolean(VTypeBoolean),
     VTypeInteger(VTypeInteger),
 }
 
-/*
-#[juniper::graphql_union]
-impl<'a> GraphQLUnion for &'a dyn VTypePrimitive {
-    fn resolve(&self) {
-        match self {
-            VT => self.as_human(),
-            Droid => self.as_droid(),
-        }
+graphql_union!(VType: () where Scalar = <S> |&self| {
+    instance_resolvers: |_| {
+        &VTypeString => match *self { VType::VTypeString(ref h) => Some(h), _ => None },
+        &VTypeBoolean => match *self { VType::VTypeBoolean(ref h) => Some(h), _ => None },
+        &VTypeInteger => match *self { VType::VTypeInteger(ref h) => Some(h), _ => None },
     }
-}
-*/
+});
 
 #[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub enum VTypeContainer {
@@ -26,34 +23,34 @@ pub enum VTypeContainer {
 
 #[derive(GraphQLObject, Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub struct VTypeString {
-    default: Option<String>,
+    pub default: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub struct VTypeStringContainer {
-    value: String,
+    pub value: String,
 }
 
 #[derive(GraphQLObject, Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub struct VTypeBoolean {
-    default: Option<bool>,
+    pub default: Option<bool>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub struct VTypeBooleanContainer {
-    value: bool,
+    pub value: bool,
 }
 
 #[derive(GraphQLObject, Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub struct VTypeInteger {
-    default: Option<i32>,
-    min: Option<i32>,
-    max: Option<i32>,
+    pub default: Option<i32>,
+    pub min: Option<i32>,
+    pub max: Option<i32>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub struct VTypeIntegerContainer {
-    value: i32,
+    pub value: i32,
 }
 
 pub trait VTypePrimitive {

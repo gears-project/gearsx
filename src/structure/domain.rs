@@ -98,8 +98,7 @@ pub struct Validation {
 pub struct Attribute {
     pub id: i32,
     pub name: String,
-    pub vtype: String,
-    pub default: String,
+    pub vtype: VType,
     pub validations: Vec<Validation>,
 }
 
@@ -144,8 +143,7 @@ impl Attribute {
         Attribute {
             id: id,
             name: name.to_string(),
-            vtype: attr_type.to_string(),
-            default: "".to_string(),
+            vtype: VType::VTypeString(VTypeString { default: Some("".to_string()) }),
             validations: Validations::new(),
         }
     }
