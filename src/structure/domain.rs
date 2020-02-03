@@ -1,4 +1,5 @@
 use super::common::{Document, DocumentReference};
+use crate::messages::AddStringAttributeToEntity;
 use super::data::*;
 use std::error;
 use std::fmt;
@@ -224,22 +225,30 @@ impl Domain {
         }
     }
 
+    /*
     pub fn entity_add_attribute(
         &mut self,
         entity_id: i32,
-        name: &str,
+        message: &AddStringAttributeToEntity,
     ) -> Result<Attribute, DomainError> {
-        let id = self.next_id();
 
-        match self.get_entity_mut(entity_id) {
-            Ok(entity) => {
-                let attribute = Attribute::new(id, name, &"default");
-                entity.attributes.push(attribute.clone());
-                Ok(attribute)
-            }
-            Err(err) => Err(err),
-        }
+        let id = self.next_id();
+        let entity = self.get_entity_mut(entity_id)?;
+
+        let vtype = VTypeString {
+            default: message.vtype.default.clone(),
+        };
+        let attribute = Attribute {
+            id: id,
+            name: message.name.clone(),
+            vtype: VType::VTypeString(vtype),
+            validations: Validations::new(),
+        };
+        let attr_clone = attribute.clone();
+        entity.attributes.push(attribute);
+        Ok(attr_clone)
     }
+    */
 }
 
 impl Entity {

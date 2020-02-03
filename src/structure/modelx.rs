@@ -30,8 +30,15 @@ impl ModelxDocument {
     }
 }
 
-#[derive(GraphQLObject, Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
-pub struct Modelx {}
+#[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
+pub struct Modelx { }
+
+#[juniper::object]
+impl Modelx {
+    fn id(&self) -> i32 {
+        1
+    }
+}
 
 impl Default for Modelx {
     fn default() -> Self {

@@ -68,6 +68,8 @@ pub struct AttributeInputString {
 #[derive(juniper::GraphQLInputObject)]
 pub struct AttributeInputInteger {
     pub default: Option<i32>,
+    pub min: Option<i32>,
+    pub max: Option<i32>,
 }
 
 #[derive(juniper::GraphQLInputObject)]
@@ -76,12 +78,10 @@ pub struct AttributeInputBoolean {
 }
 
 #[derive(juniper::GraphQLInputObject)]
-pub struct AddAttributeToEntity {
+pub struct AddStringAttributeToEntity {
     pub project_id: Uuid,
     pub domain_id: Uuid,
     pub entity_id: i32,
     pub name: String,
-    pub as_string: Option<AttributeInputString>,
-    pub as_boolean: Option<AttributeInputBoolean>,
-    pub as_integer: Option<AttributeInputInteger>,
+    // pub vtype: VTypeString,
 }
