@@ -77,8 +77,7 @@ impl MutationRoot {
         Ok(entity)
     }
 
-    /*
-    fn entity_add_attribute(
+    fn entity_add_string_attribute(
         context: &Context,
         input: AddStringAttributeToEntity,
     ) -> FieldResult<Attribute> {
@@ -86,12 +85,11 @@ impl MutationRoot {
         let mut doc = DBDocument::by_id(&conn, &input.domain_id)?.as_domain()?;
         let attribute = doc
             .body
-            .entity_add_attribute(input.entity_id, &input)?;
+            .entity_add_string_attribute(input.entity_id, &input)?;
         let _ = DBDocument::save(&conn, &doc.as_raw());
         Ok(attribute)
     }
 
-    */
     fn delete_project(context: &Context, input: ProjectIdInput) -> FieldResult<i32> {
         let mut conn = context.dbpool.get()?;
         let res = DBDocument::delete_project(&conn, &input.project_id)?;

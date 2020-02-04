@@ -140,11 +140,11 @@ impl Default for Events {
 }
 
 impl Attribute {
-    pub fn new(id: i32, name: &str, attr_type: &str) -> Self {
+    pub fn new(id: i32, name: &str, vtype: VType) -> Self {
         Attribute {
             id: id,
             name: name.to_string(),
-            vtype: VType::VTypeString(VTypeString { default: Some("".to_string()) }),
+            vtype: vtype,
             validations: Validations::new(),
         }
     }
@@ -225,8 +225,7 @@ impl Domain {
         }
     }
 
-    /*
-    pub fn entity_add_attribute(
+    pub fn entity_add_string_attribute(
         &mut self,
         entity_id: i32,
         message: &AddStringAttributeToEntity,
@@ -236,7 +235,7 @@ impl Domain {
         let entity = self.get_entity_mut(entity_id)?;
 
         let vtype = VTypeString {
-            default: message.vtype.default.clone(),
+            default: message.default.clone(),
         };
         let attribute = Attribute {
             id: id,
@@ -248,7 +247,6 @@ impl Domain {
         entity.attributes.push(attribute);
         Ok(attr_clone)
     }
-    */
 }
 
 impl Entity {

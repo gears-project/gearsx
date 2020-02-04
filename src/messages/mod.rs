@@ -83,5 +83,5 @@ pub struct AddStringAttributeToEntity {
     pub domain_id: Uuid,
     pub entity_id: i32,
     pub name: String,
-    // pub vtype: VTypeString,
+    pub default: Option<String>,
 }
