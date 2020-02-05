@@ -25,6 +25,7 @@ pub enum VTypeContainer {
 }
 
 #[derive(GraphQLObject, Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
+#[graphql(name = "string")]
 pub struct VTypeString {
     pub default: Option<String>,
 }
