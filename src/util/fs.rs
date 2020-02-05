@@ -1,5 +1,5 @@
 use crate::structure::common::ModelLoadError;
-use crate::structure::domain::DomainDocument;
+
 use crate::structure::modelx::ModelxDocument;
 
 use std;
