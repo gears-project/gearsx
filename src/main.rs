@@ -22,36 +22,31 @@ mod messages;
 mod structure;
 mod util;
 
-use actix_cors::Cors;
-use actix_web::{http, middleware, web, App, HttpServer};
+use warp::{Reply, Filter};
 
-#[actix_rt::main]
-async fn main() -> std::io::Result<()> {
+fn create_graphql_filter() -> warp::filters::BoxedFilter<(impl Reply,)> {
+    let state = warp::any().map(move || graphql::schema::Context::new());
+    let graphql_filter = juniper_warp::make_graphql_filter(graphql::schema::create_schema(), state.boxed());
+    let graphql_filter = warp::path("graphql").and(graphql_filter);
+    graphql_filter.boxed()
+}
+
+fn main() {
     dotenv::dotenv().ok();
-    std::env::set_var("RUST_LOG", "actix_web=info,debug");
     env_logger::init();
 
     let yaml = load_yaml!("cli.yml");
     let _matches = clap::App::from(yaml).get_matches();
 
-    let pool = db::connection::get_connection_pool();
+    let graphql_filter = create_graphql_filter();
+    let log = warp::log("warp_server");
 
-    HttpServer::new(move || {
-        App::new()
-            .data(pool.clone())
-            .wrap(middleware::Logger::default())
-            .wrap(
-                Cors::new()
-                    .allowed_methods(vec!["GET", "POST", "HEAD", "PUT"])
-                    .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT])
-                    .allowed_header(http::header::CONTENT_TYPE)
-                    .max_age(3600)
-                    .finish(),
-            )
-            .configure(graphql::handler::register)
-            .default_service(web::to(|| async { "404" }))
-    })
-    .bind("127.0.0.1:8080")?
-    .run()
-    .await
+    warp::serve(
+        warp::get2()
+            .and(warp::path("graphiql"))
+            .and(juniper_warp::graphiql_filter("/graphql"))
+            .or(graphql_filter)
+            .with(log),
+    )
+    .run(([127, 0, 0, 1], 8080));
 }
