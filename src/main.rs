@@ -41,11 +41,23 @@ fn main() {
     let graphql_filter = create_graphql_filter();
     let log = warp::log("warp_server");
 
-    warp::serve(
+    let cors = warp::cors()
+        .allow_any_origin()
+        .allow_headers(vec!["*"])
+        .allow_methods(vec!["GET", "POST", "PUT", "DELETE"]);
+
+    let cors_route = warp::any()
+        .map(warp::reply)
+        .with(cors);
+
+    let graphql_routes = 
         warp::get2()
             .and(warp::path("graphiql"))
             .and(juniper_warp::graphiql_filter("/graphql"))
-            .or(graphql_filter)
+            .or(graphql_filter);
+
+    warp::serve(
+            graphql_routes
             .with(log),
     )
     .run(([127, 0, 0, 1], 8080));

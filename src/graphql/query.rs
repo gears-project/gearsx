@@ -16,6 +16,12 @@ impl QueryRoot {
         Ok(projects)
     }
 
+    #[graphql(description = "Fetch a project by id")]
+    fn project(context: &Context, input: ProjectIdInput) -> FieldResult<DBProject> {
+        let mut conn = context.dbpool.get()?;
+        Ok(DBProject::by_id(&conn, &input.project_id)?)
+    }
+
     #[graphql(description = "List of all domain documents")]
     fn domains(context: &Context, project: ProjectIdInput) -> FieldResult<Vec<DomainDocument>> {
         let mut conn = context.dbpool.get()?;
