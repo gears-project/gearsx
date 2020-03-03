@@ -6,8 +6,6 @@ table! {
         doctype -> Text,
         version -> Int4,
         body -> Jsonb,
-        created_at -> Timestamptz,
-        updated_at -> Timestamptz,
     }
 }
 
@@ -17,8 +15,6 @@ table! {
         name -> Text,
         description -> Text,
         model_id -> Nullable<Uuid>,
-        created_at -> Timestamptz,
-        updated_at -> Timestamptz,
     }
 }
 

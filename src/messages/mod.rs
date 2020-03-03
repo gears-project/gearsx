@@ -37,12 +37,23 @@ pub struct DomainInput {
 }
 
 #[derive(juniper::GraphQLInputObject)]
-pub struct DocumentIdentifier {
-    pub id: Uuid,
+pub struct ProjectId {
+    pub project_id: Uuid,
 }
 
 #[derive(juniper::GraphQLInputObject)]
-pub struct DomainIdentifier {
+pub struct DocumentId {
+    pub document_id: Uuid,
+}
+
+#[derive(juniper::GraphQLInputObject)]
+pub struct DocumentElementId {
+    pub document_id: Uuid,
+    pub element_id: i32,
+}
+
+#[derive(juniper::GraphQLInputObject)]
+pub struct DocumentIdentifier {
     pub project_id: Uuid,
     pub domain_id: Uuid,
 }

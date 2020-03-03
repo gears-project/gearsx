@@ -4,6 +4,7 @@ use super::data::*;
 use std::error;
 use std::fmt;
 use uuid::Uuid;
+use chrono::NaiveDateTime;
 
 pub type DomainDocument = Document<Domain>;
 
@@ -15,6 +16,8 @@ impl Default for DomainDocument {
             name: "New Domain".to_owned(),
             doctype: "domain".to_owned(),
             version: 0,
+            created_at: NaiveDateTime::from_timestamp(0, 0),
+            updated_at: NaiveDateTime::from_timestamp(0, 0),
             body: Domain::default(),
         }
     }

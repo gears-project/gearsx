@@ -11,6 +11,16 @@ use diesel::pg::PgConnection;
 use diesel::result::Error as DieselError;
 use serde_json;
 use uuid::Uuid;
+use chrono::NaiveDateTime;
+
+#[derive(Serialize, Deserialize, Debug, AsChangeset, Insertable, Identifiable)]
+#[table_name = "projects"]
+pub struct NewProject {
+    pub id: Uuid,
+    pub name: String,
+    pub description: String,
+    pub model_id: Option<Uuid>,
+}
 
 #[derive(Serialize, Deserialize, Debug, AsChangeset, Queryable, Insertable, Identifiable)]
 #[table_name = "projects"]
@@ -19,6 +29,8 @@ pub struct Project {
     pub name: String,
     pub description: String,
     pub model_id: Option<Uuid>,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
 }
 
 #[juniper::object(Context = schema::Context)]
@@ -47,6 +59,17 @@ impl Project {
 
 #[derive(Serialize, Deserialize, Debug, AsChangeset, Queryable, Insertable, Identifiable)]
 #[table_name = "documents"]
+pub struct InsertDocument {
+    pub id: Uuid,
+    pub project_id: Uuid,
+    pub name: String,
+    pub doctype: String,
+    pub version: i32,
+    pub body: serde_json::Value,
+}
+
+#[derive(Serialize, Deserialize, Debug, AsChangeset, Queryable, Insertable, Identifiable)]
+#[table_name = "documents"]
 pub struct Document {
     pub id: Uuid,
     pub project_id: Uuid,
@@ -54,6 +77,8 @@ pub struct Document {
     pub doctype: String,
     pub version: i32,
     pub body: serde_json::Value,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
 }
 
 impl Project {
@@ -83,6 +108,7 @@ impl Project {
 
         project.model_id = model.id.into();
         let updated_project = diesel::update(projects::table)
+            .filter(projects::id.eq(project.id))
             .set(&project)
             .get_result::<Project>(conn)?;
 
@@ -95,10 +121,10 @@ impl Project {
         Ok(updated_project)
     }
 
-    pub fn create(conn: &PgConnection, name: &str) -> Result<Project, DieselError> {
+    fn create(conn: &PgConnection, name: &str) -> Result<Project, DieselError> {
         let id = uuid::Uuid::new_v4();
 
-        let project = Project {
+        let project = NewProject {
             id: id,
             name: name.to_owned(),
             description: name.to_owned(),
@@ -129,13 +155,9 @@ impl Project {
         }
     }
 
-    /*
-        pub fn delete(id: &str, connection: &PgConnection) -> Result<(), DieselError> {
-            diesel::delete(projects::table.find(id))
-                .execute(connection)?;
-            Ok(())
-        }
-    */
+    pub fn delete_document(conn: &PgConnection, id: &Uuid) -> Result<usize, DieselError> {
+        diesel::delete(documents::table.find(id)).execute(conn)
+    }
 }
 
 pub enum GearsDocument {
@@ -152,6 +174,8 @@ impl Document {
                 doctype: self.doctype.clone(),
                 name: self.name.clone(),
                 version: self.version.clone(),
+                created_at: self.created_at.clone(),
+                updated_at: self.updated_at.clone(),
                 body: serde_json::from_value::<Domain>(self.body.clone()).unwrap(),
             }),
             _ => Err("Not a domain document".to_owned()),
@@ -166,6 +190,8 @@ impl Document {
                 doctype: self.doctype.clone(),
                 name: self.name.clone(),
                 version: self.version.clone(),
+                created_at: self.created_at.clone(),
+                updated_at: self.updated_at.clone(),
                 body: serde_json::from_value::<Modelx>(self.body.clone()).unwrap(),
             }),
             _ => Err("Not a modelx document".to_owned()),
@@ -186,6 +212,8 @@ impl Document {
             version: doc.version.to_owned(),
             name: doc.name.to_owned(),
             doctype: doc.doctype.to_owned(),
+            updated_at: doc.updated_at.to_owned(),
+            created_at: doc.created_at.to_owned(),
             body: doc.body.to_owned(),
         }
     }
@@ -247,14 +275,6 @@ impl Document {
     pub fn delete_project(conn: &PgConnection, id: &Uuid) -> Result<usize, DieselError> {
         diesel::delete(projects::table.find(id)).execute(conn)
     }
+
 }
 
-/*
-juniper::graphql_union!(<'a> &'a Docco: () as "Document" where Scalar = <S> |&self| {
-    instance_resolvers: |_| {
-        // The left hand side indicates the concrete type T, the right hand
-        // side should be an expression returning Option<T>
-        &DomainDocument => self.as_domain(),
-    }
-});
-*/

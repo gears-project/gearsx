@@ -3,6 +3,7 @@ use serde;
 use serde_json;
 use serde_yaml;
 use uuid::Uuid;
+use chrono::NaiveDateTime;
 
 #[derive(Queryable, Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct Document<T> {
@@ -11,6 +12,8 @@ pub struct Document<T> {
     pub name: String,
     pub doctype: String,
     pub version: i32,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
     pub body: T,
 }
 
@@ -20,6 +23,8 @@ pub struct RawDocument<'a> {
     pub name: &'a str,
     pub doctype: &'a str,
     pub version: &'a i32,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
     pub body: serde_json::Value,
 }
 
@@ -48,6 +53,8 @@ where
             name: "default".to_owned(),
             doctype: doctype,
             version: 0,
+            created_at: NaiveDateTime::from_timestamp(0, 0),
+            updated_at: NaiveDateTime::from_timestamp(0, 0),
             body: <T>::default(),
         }
     }
@@ -66,6 +73,8 @@ where
             name: &self.name,
             doctype: &self.doctype,
             version: &self.version,
+            created_at: self.created_at,
+            updated_at: self.updated_at,
             body: serde_json::to_value(&self.body).unwrap(),
         }
     }

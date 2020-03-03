@@ -23,16 +23,16 @@ impl QueryRoot {
     }
 
     #[graphql(description = "List of all domain documents")]
-    fn domains(context: &Context, project: ProjectIdInput) -> FieldResult<Vec<DomainDocument>> {
+    fn domains(context: &Context, input: ProjectId) -> FieldResult<Vec<DomainDocument>> {
         let mut conn = context.dbpool.get()?;
-        let documents = DBDocument::find_domains(&conn, &project.project_id)?;
+        let documents = DBDocument::find_domains(&conn, &input.project_id)?;
         Ok(documents)
     }
 
-    #[graphql(description = "List of all domain documents")]
-    fn domain(context: &Context, input: DocumentIdentifier) -> FieldResult<DomainDocument> {
+    #[graphql(description = "Fetch a domain document by id")]
+    fn domain(context: &Context, input: DocumentId) -> FieldResult<DomainDocument> {
         let mut conn = context.dbpool.get()?;
-        let doc = DBDocument::by_id(&conn, &input.id)?.as_domain()?;
+        let doc = DBDocument::by_id(&conn, &input.document_id)?.as_domain()?;
         Ok(doc)
     }
 }

@@ -8,6 +8,7 @@ extern crate serde_yaml;
 
 #[macro_use]
 extern crate juniper;
+extern crate chrono;
 
 #[macro_use]
 extern crate diesel;

@@ -1,0 +1,15 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "postgres in docker-compose",
+      "Group": "Server Group 1",
+      "Host": "postgres",
+      "Port": 5432,
+      "Username": "postgres",
+      "Password": "postgres",
+      "SSLMode": "prefer",
+      "MaintenanceDB": "postgres"
+    }
+  }
+}
+
