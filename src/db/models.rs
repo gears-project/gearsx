@@ -47,6 +47,14 @@ impl Project {
         &self.description
     }
 
+    fn created_at(&self) ->  NaiveDateTime {
+        self.created_at
+
+    }
+    fn updated_at(&self) ->  NaiveDateTime {
+        self.updated_at
+    }
+
     fn model(&self, context: &schema::Context) -> juniper::FieldResult<Option<ModelxDocument>> {
         let mut conn = context.dbpool.get()?;
         if let Some(id) = &self.model_id {
