@@ -67,6 +67,14 @@ impl DomainDocument {
         &self.doctype
     }
 
+    fn created_at(&self) ->  NaiveDateTime {
+        self.created_at
+
+    }
+    fn updated_at(&self) ->  NaiveDateTime {
+        self.updated_at
+    }
+
     fn body(&self) -> &Domain {
         &self.body
     }
