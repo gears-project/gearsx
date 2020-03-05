@@ -1,3 +1,5 @@
+#[macro_use]
+use crate as root;
 use super::common::{Document, DocumentReference};
 use crate::messages::AddStringAttributeToEntity;
 use super::data::*;
@@ -6,31 +8,7 @@ use std::fmt;
 use uuid::Uuid;
 use chrono::NaiveDateTime;
 
-macro_rules! gears_doc {
-    ($source:ty, $name:ident, $doctype:expr) => {
-        pub type $name = Document<$source>;
-
-        impl Default for $name {
-            fn default() -> Self {
-                Self {
-                    id: Uuid::new_v4(),
-                    project_id: crate::util::naming::empty_uuid(),
-                    name: "New".to_owned(),
-                    doctype: stringify!($doctype).to_owned(),
-                    version: 0,
-                    created_at: NaiveDateTime::from_timestamp(0, 0),
-                    updated_at: NaiveDateTime::from_timestamp(0, 0),
-                    body: <$source>::default(),
-                }
-            }
-        }
-    };
-}
-
-// pub type DomainDocument = Document<Domain>;
-
-gears_doc!(Domain, DomainDocument, doctype);
-
+root::gears_doc!(Domain, DomainDocument, domain);
 
 #[derive(Debug, PartialEq)]
 pub enum DomainError {

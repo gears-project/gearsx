@@ -28,6 +28,28 @@ pub struct RawDocument<'a> {
     pub body: serde_json::Value,
 }
 
+#[macro_export]
+macro_rules! gears_doc {
+    ($source:ty, $name:ident, $doctype:expr) => {
+        pub type $name = Document<$source>;
+
+        impl Default for $name {
+            fn default() -> Self {
+                Self {
+                    id: Uuid::new_v4(),
+                    project_id: crate::util::naming::empty_uuid(),
+                    name: "New".to_owned(),
+                    doctype: stringify!($doctype).to_owned(),
+                    version: 0,
+                    created_at: NaiveDateTime::from_timestamp(0, 0),
+                    updated_at: NaiveDateTime::from_timestamp(0, 0),
+                    body: <$source>::default(),
+                }
+            }
+        }
+    };
+}
+
 // pub type DocumentList<T> = Vec<Document<T>>;
 
 #[derive(GraphQLObject, Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
