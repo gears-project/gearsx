@@ -23,11 +23,12 @@ mod messages;
 mod structure;
 mod util;
 
-use warp::{Reply, Filter};
+use warp::{Filter, Reply};
 
 fn create_graphql_filter() -> warp::filters::BoxedFilter<(impl Reply,)> {
     let state = warp::any().map(move || graphql::schema::Context::new());
-    let graphql_filter = juniper_warp::make_graphql_filter(graphql::schema::create_schema(), state.boxed());
+    let graphql_filter =
+        juniper_warp::make_graphql_filter(graphql::schema::create_schema(), state.boxed());
     let graphql_filter = warp::path("graphql").and(graphql_filter);
     graphql_filter.boxed()
 }
@@ -47,19 +48,12 @@ fn main() {
         .allow_headers(vec!["*"])
         .allow_methods(vec!["GET", "POST", "PUT", "DELETE"]);
 
-    let cors_route = warp::any()
-        .map(warp::reply)
-        .with(cors);
+    let _cors_route = warp::any().map(warp::reply).with(cors);
 
-    let graphql_routes = 
-        warp::get2()
-            .and(warp::path("graphiql"))
-            .and(juniper_warp::graphiql_filter("/graphql"))
-            .or(graphql_filter);
+    let graphql_routes = warp::get2()
+        .and(warp::path("graphiql"))
+        .and(juniper_warp::graphiql_filter("/graphql"))
+        .or(graphql_filter);
 
-    warp::serve(
-            graphql_routes
-            .with(log),
-    )
-    .run(([127, 0, 0, 1], 8080));
+    warp::serve(graphql_routes.with(log)).run(([127, 0, 0, 1], 8080));
 }

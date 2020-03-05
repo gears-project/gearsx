@@ -98,12 +98,12 @@ impl VTypePrimitive for VTypeInteger {
         let x = self.default.unwrap_or(0);
         if let Some(min) = self.min {
             if min > x {
-                return false
+                return false;
             }
         }
         if let Some(max) = self.max {
             if max < x {
-                return false
+                return false;
             }
         }
         true

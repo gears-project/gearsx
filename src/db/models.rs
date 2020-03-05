@@ -7,11 +7,11 @@ use crate::messages::QueryPage;
 use crate::structure::common::RawDocument;
 use crate::structure::domain::{Domain, DomainDocument};
 use crate::structure::modelx::{Modelx, ModelxDocument};
+use chrono::NaiveDateTime;
 use diesel::pg::PgConnection;
 use diesel::result::Error as DieselError;
 use serde_json;
 use uuid::Uuid;
-use chrono::NaiveDateTime;
 
 #[derive(Serialize, Deserialize, Debug, AsChangeset, Insertable, Identifiable)]
 #[table_name = "projects"]
@@ -47,11 +47,10 @@ impl Project {
         &self.description
     }
 
-    fn created_at(&self) ->  NaiveDateTime {
+    fn created_at(&self) -> NaiveDateTime {
         self.created_at
-
     }
-    fn updated_at(&self) ->  NaiveDateTime {
+    fn updated_at(&self) -> NaiveDateTime {
         self.updated_at
     }
 
@@ -283,6 +282,4 @@ impl Document {
     pub fn delete_project(conn: &PgConnection, id: &Uuid) -> Result<usize, DieselError> {
         diesel::delete(projects::table.find(id)).execute(conn)
     }
-
 }
-

@@ -31,7 +31,7 @@ impl ModelxDocument {
 }
 
 #[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
-pub struct Modelx { }
+pub struct Modelx {}
 
 #[juniper::object]
 impl Modelx {

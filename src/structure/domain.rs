@@ -1,12 +1,12 @@
 #[macro_use]
 use crate as root;
 use super::common::{Document, DocumentReference};
-use crate::messages::AddStringAttributeToEntity;
 use super::data::*;
+use crate::messages::AddStringAttributeToEntity;
+use chrono::NaiveDateTime;
 use std::error;
 use std::fmt;
 use uuid::Uuid;
-use chrono::NaiveDateTime;
 
 root::gears_doc!(Domain, DomainDocument, domain);
 
@@ -54,11 +54,10 @@ impl DomainDocument {
         &self.doctype
     }
 
-    fn created_at(&self) ->  NaiveDateTime {
+    fn created_at(&self) -> NaiveDateTime {
         self.created_at
-
     }
-    fn updated_at(&self) ->  NaiveDateTime {
+    fn updated_at(&self) -> NaiveDateTime {
         self.updated_at
     }
 
@@ -228,7 +227,6 @@ impl Domain {
         entity_id: i32,
         message: &AddStringAttributeToEntity,
     ) -> Result<Attribute, DomainError> {
-
         let id = self.next_id();
         let entity = self.get_entity_mut(entity_id)?;
 

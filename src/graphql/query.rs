@@ -1,9 +1,9 @@
+use super::schema::Context;
+use crate::db::models::{Document as DBDocument, Project as DBProject};
+use crate::messages::*;
+use crate::structure::domain::{Attribute, DomainDocument, Entity};
 use juniper;
 use juniper::FieldResult;
-use crate::messages::*;
-use crate::db::models::{Document as DBDocument, Project as DBProject};
-use crate::structure::domain::{Attribute, DomainDocument, Entity};
-use super::schema::Context;
 
 pub struct QueryRoot;
 

@@ -1,9 +1,9 @@
 use crate::messages::DocumentProperties;
+use chrono::NaiveDateTime;
 use serde;
 use serde_json;
 use serde_yaml;
 use uuid::Uuid;
-use chrono::NaiveDateTime;
 
 #[derive(Queryable, Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct Document<T> {

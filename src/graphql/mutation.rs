@@ -1,11 +1,11 @@
 use juniper;
 
-use juniper::FieldResult;
+use super::schema::Context;
 use crate::db::models::{Document as DocumentDAO, Project as ProjectDAO};
 use crate::messages::*;
 use crate::structure::domain::{Attribute, DomainDocument, Entity};
 use crate::structure::modelx::ModelxDocument;
-use super::schema::Context;
+use juniper::FieldResult;
 
 pub struct MutationRoot;
 
@@ -80,5 +80,4 @@ impl MutationRoot {
         Ok(attribute)
     }
     */
-
 }
