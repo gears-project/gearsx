@@ -3,10 +3,10 @@ use crate as root;
 use super::common::{Document, DocumentReference};
 use super::data::*;
 use crate::messages::AddStringAttributeToEntity;
-use chrono::NaiveDateTime;
 use std::error;
 use std::fmt;
-use uuid::Uuid;
+// use uuid::Uuid;
+// use chrono::NaiveDateTime;
 
 root::gears_doc!(Domain, DomainDocument, domain);
 
