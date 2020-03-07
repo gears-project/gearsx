@@ -1,3 +1,5 @@
+use crate::messages::DocumentProperties;
+use chrono::NaiveDateTime;
 use serde;
 use serde_json;
 use serde_yaml;
@@ -10,6 +12,8 @@ pub struct Document<T> {
     pub name: String,
     pub doctype: String,
     pub version: i32,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
     pub body: T,
 }
 
@@ -19,7 +23,35 @@ pub struct RawDocument<'a> {
     pub name: &'a str,
     pub doctype: &'a str,
     pub version: &'a i32,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
     pub body: serde_json::Value,
+}
+
+#[macro_export]
+macro_rules! gears_doc {
+    ($source:ty, $name:ident, $doctype:expr) => {
+
+        use uuid::Uuid;
+        use chrono::NaiveDateTime;
+
+        pub type $name = Document<$source>;
+
+        impl Default for $name {
+            fn default() -> Self {
+                Self {
+                    id: Uuid::new_v4(),
+                    project_id: crate::util::naming::empty_uuid(),
+                    name: "New".to_owned(),
+                    doctype: stringify!($doctype).to_owned(),
+                    version: 0,
+                    created_at: NaiveDateTime::from_timestamp(0, 0),
+                    updated_at: NaiveDateTime::from_timestamp(0, 0),
+                    body: <$source>::default(),
+                }
+            }
+        }
+    };
 }
 
 // pub type DocumentList<T> = Vec<Document<T>>;
@@ -47,36 +79,17 @@ where
             name: "default".to_owned(),
             doctype: doctype,
             version: 0,
+            created_at: NaiveDateTime::from_timestamp(0, 0),
+            updated_at: NaiveDateTime::from_timestamp(0, 0),
             body: <T>::default(),
         }
     }
 
-    pub fn new_from_header(header: &DocumentHeader) -> Self {
-        Self {
-            id: header.id.clone(),
-            project_id: header.project_id.clone(),
-            name: header.name.clone(),
-            doctype: header.doctype.clone(),
-            version: header.version.clone(),
-            body: <T>::default(),
+    pub fn change_props(&mut self, props: &DocumentProperties) -> &Self {
+        if let Some(name) = &props.name {
+            self.name = name.clone();
         }
-    }
-
-    pub fn get_header(&self) -> DocumentHeader {
-        DocumentHeader {
-            id: self.id.clone(),
-            project_id: self.project_id.clone(),
-            name: self.name.clone(),
-            doctype: self.doctype.clone(),
-            version: self.version.clone(),
-        }
-    }
-
-    pub fn set_header(&mut self, header: &DocumentHeader) -> () {
-        self.id = header.id.clone();
-        self.name = header.name.clone();
-        self.doctype = header.doctype.clone();
-        self.version = header.version.clone();
+        self
     }
 
     pub fn as_raw(&self) -> RawDocument {
@@ -86,6 +99,8 @@ where
             name: &self.name,
             doctype: &self.doctype,
             version: &self.version,
+            created_at: self.created_at,
+            updated_at: self.updated_at,
             body: serde_json::to_value(&self.body).unwrap(),
         }
     }
@@ -168,7 +183,7 @@ where
     }
 
     pub fn change(&mut self) -> i32 {
-        self.version = self.version + 1;
+        self.version += 1;
         self.version
     }
 }
@@ -181,81 +196,13 @@ where
     fn default() -> Self {
         Self {
             id: Uuid::new_v4(),
-            project_id: Uuid::new_v4(),
+            project_id: crate::util::naming::empty_uuid(),
             name: "default".to_owned(),
             doctype: "none".to_owned(),
             version: 0,
             body: <T>::default(),
         }
     }
+
 }
 */
-
-//
-// This struct only exists to make the top-level Model object serializable into a project's
-// model.json
-//
-
-#[derive(Serialize, Deserialize, Debug, Clone, Eq, PartialEq)]
-pub struct DocumentHeader {
-    pub id: Uuid,
-    pub project_id: Uuid,
-    pub name: String,
-    pub doctype: String,
-    pub version: i32,
-}
-
-impl DocumentHeader {
-    /// Return a string representation of the DocumentHeader
-    ///
-    pub fn to_string(&self) -> String {
-        format!("document {}", self.id)
-    }
-
-    /// Return an indented JSON representation of the DocumentHeader
-    ///
-    /// partof: SPC-serialization-json
-    pub fn to_json(&self) -> String {
-        serde_json::to_string_pretty(&self).unwrap()
-    }
-
-    /// Return a compact JSON representation of the DocumentHeader
-    ///
-    /// partof: SPC-serialization-json
-    pub fn to_json_compact(&self) -> String {
-        serde_json::to_string(&self).unwrap()
-    }
-
-    /// Initialize a DocumentHeader from a JSON string
-    ///
-    /// partof: SPC-serialization-json
-    pub fn from_json(s: &str) -> Result<Self, ModelLoadError> {
-        match serde_json::from_str(s) {
-            Ok(res) => Ok(res),
-            Err(err) => {
-                let msg = format!("{}", err);
-                Err(ModelLoadError::BadStructure(msg))
-            }
-        }
-    }
-
-    /// Return a YAML representation of the DocumentHeader
-    ///
-    /// partof: SPC-serialization-yaml
-    pub fn to_yaml(&self) -> String {
-        serde_yaml::to_string(&self).unwrap()
-    }
-
-    /// Initialize a DocumentHeader from a JSON string
-    ///
-    /// partof: SPC-serialization-yaml
-    pub fn from_yaml(s: &str) -> Result<Self, ModelLoadError> {
-        match serde_yaml::from_str(s) {
-            Ok(res) => Ok(res),
-            Err(err) => {
-                let msg = format!("{}", err);
-                Err(ModelLoadError::BadStructure(msg))
-            }
-        }
-    }
-}

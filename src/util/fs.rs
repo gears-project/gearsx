@@ -1,15 +1,12 @@
-use crate::structure::common::{DocumentHeader, ModelLoadError};
-use crate::structure::modelx::{ModelxDocument};
-use crate::structure::domain::DomainDocument;
+use crate::structure::common::ModelLoadError;
 
-use glob::glob_with;
-use glob::MatchOptions;
+use crate::structure::modelx::ModelxDocument;
 
+use std;
 use std::error::Error;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
-use std;
 
 fn read_json_file(path: &Path) -> String {
     let display = path.display();
@@ -69,13 +66,11 @@ pub fn model_to_fs(model: &ModelxDocument, path: &str) -> Result<(), ModelLoadEr
 
     debug!(
         "Writing model id:'{}', version:'{}' to directory '{}'",
-        model.id,
-        model.version,
-        path
+        model.id, model.version, path
     );
 
-    let model_header_doc_filename = format!("{}/model.json", path);
-    write_file(&model_header_doc_filename, &model.get_header().to_json());
+    let model_doc_filename = format!("{}/modelx.json", path);
+    write_file(&model_doc_filename, &model.to_json());
 
     /*
     let doc_filename = format!("{}/domain.json", path);
@@ -89,38 +84,38 @@ pub fn model_from_fs(path: &str) -> Result<ModelxDocument, ModelLoadError> {
     // XXX Error handling, assumption checking
 
     debug!("Reading model from directory '{}'", path);
-    let model_header_filename = format!("{}/model.json", path);
-    let model_header_path = Path::new(&model_header_filename);
-    let model_header_json = read_json_file(model_header_path);
-    debug!("model_from_fs : Deserializing model header JSON from {}", model_header_filename);
-    let model_header: DocumentHeader = match DocumentHeader::from_json(&model_header_json) {
+    let model_filename = format!("{}/modelx.json", path);
+    let model_path = Path::new(&model_filename);
+    let model_json = read_json_file(model_path);
+    debug!(
+        "model_from_fs : Deserializing model JSON from {}",
+        model_filename
+    );
+    let modeldoc: ModelxDocument = match ModelxDocument::from_json(&model_json) {
         Ok(res) => res,
-        Err(err) => return Err(err)
+        Err(err) => return Err(err),
     };
 
-    let mut modeldoc = ModelxDocument::new_from_header(&model_header);
-
+    /*
     let domain_filename = format!("{}/domain.json", path);
     let domain_path = Path::new(&domain_filename);
     let json = read_json_file(domain_path);
     debug!("model_from_fs : Deserializing domain JSON from {}", domain_filename);
-    let domain: DomainDocument = match DomainDocument::from_json(&json) {
+    let _domain: DomainDocument = match DomainDocument::from_json(&json) {
         Ok(res) => res,
         Err(err) => return Err(err)
     };
+    */
 
     Ok(modeldoc)
 }
 
 pub fn init_new_model_dir(path: &str) -> Result<(), ModelLoadError> {
     create_dir(path);
-    let mut model = ModelxDocument::new(&crate::util::naming::empty_uuid(), "modelx".into());
+    let model = ModelxDocument::new(&crate::util::naming::empty_uuid(), "modelx".into());
     model_to_fs(&model, &path)
 }
 
 pub fn is_model_dir(path: &str) -> bool {
-    match model_from_fs(path) {
-        Ok(_) => true,
-        Err(_) => false,
-    }
+    model_from_fs(path).is_ok()
 }

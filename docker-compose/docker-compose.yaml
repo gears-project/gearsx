@@ -1,0 +1,27 @@
+version: '3.6'
+services:
+  postgres:
+    image: postgres
+    restart: always
+    volumes:
+    - ./data/postgres-docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+    - db_data:/var/lib/postgresql/data
+    ports:
+    - 5432:5432
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    depends_on:
+    - postgres
+    ports:
+    - 5050:80
+    environment:
+      PGADMIN_DEFAULT_EMAIL: postgres
+      PGADMIN_DEFAULT_PASSWORD: postgres
+    volumes:
+    - ./data/pgadmin-storage:/var/lib/pgadmin/storage/postgres/
+    - ./data/pgadmin-servers/servers.json:/pgadmin4/servers.json
+volumes:
+  db_data:
+
+

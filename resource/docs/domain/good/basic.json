@@ -26,24 +26,30 @@
                     {
                         "id": 2,
                         "name": "title",
-                        "vtype": "string",
-                        "default": "",
+                        "vtype": {
+                            "type": "string",
+                            "default": "No title"
+                        },
                         "validations": [
                         ]
                     },
                     {
                         "id": 3,
                         "name": "body",
-                        "vtype": "string",
-                        "default": "",
+                        "vtype": {
+                            "type": "string",
+                            "default": "No title"
+                        },
                         "validations": [
                         ]
                     },
                     {
                         "id": 4,
                         "name": "created",
-                        "vtype": "string",
-                        "default": "",
+                        "vtype": {
+                            "type": "string",
+                            "default": "No title"
+                        },
                         "validations": [
                         ]
                     }
@@ -64,9 +70,11 @@
                     {
                         "id": 7,
                         "name": "post",
-                        "vtype": "string",
+                        "vtype": {
+                            "type": "string",
+                            "default": "No title"
+                        },
                         "storage": "persistent",
-                        "default": "",
                         "validations": [
                         ]
                     }

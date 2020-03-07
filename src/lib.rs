@@ -18,6 +18,6 @@ extern crate log;
 
 pub mod db;
 pub mod graphql;
-pub mod structure;
 pub mod messages;
+pub mod structure;
 pub mod util;

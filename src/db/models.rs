@@ -2,25 +2,36 @@ use super::schema::{documents, projects};
 use crate::diesel::ExpressionMethods;
 use crate::diesel::QueryDsl;
 use crate::diesel::RunQueryDsl;
-use crate::structure::common::{RawDocument, DocumentReference};
-use crate::structure::modelx::{Modelx, ModelxDocument};
+use crate::graphql::schema;
+use crate::messages::QueryPage;
+use crate::structure::common::RawDocument;
 use crate::structure::domain::{Domain, DomainDocument};
-use crate::messages::{QueryPage};
+use crate::structure::xflow::{XFlow, XFlowDocument};
+use crate::structure::modelx::{Modelx, ModelxDocument};
+use chrono::NaiveDateTime;
 use diesel::pg::PgConnection;
 use diesel::result::Error as DieselError;
 use serde_json;
 use uuid::Uuid;
-use crate::graphql::schema;
 
-#[derive(
-    Serialize, Deserialize, Debug, AsChangeset, Queryable, Insertable, Identifiable,
-)]
+#[derive(Serialize, Deserialize, Debug, AsChangeset, Insertable, Identifiable)]
+#[table_name = "projects"]
+pub struct NewProject {
+    pub id: Uuid,
+    pub name: String,
+    pub description: String,
+    pub model_id: Option<Uuid>,
+}
+
+#[derive(Serialize, Deserialize, Debug, AsChangeset, Queryable, Insertable, Identifiable)]
 #[table_name = "projects"]
 pub struct Project {
     pub id: Uuid,
     pub name: String,
     pub description: String,
     pub model_id: Option<Uuid>,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
 }
 
 #[juniper::object(Context = schema::Context)]
@@ -37,6 +48,13 @@ impl Project {
         &self.description
     }
 
+    fn created_at(&self) -> NaiveDateTime {
+        self.created_at
+    }
+    fn updated_at(&self) -> NaiveDateTime {
+        self.updated_at
+    }
+
     fn model(&self, context: &schema::Context) -> juniper::FieldResult<Option<ModelxDocument>> {
         let mut conn = context.dbpool.get()?;
         if let Some(id) = &self.model_id {
@@ -49,7 +67,7 @@ impl Project {
 
 #[derive(Serialize, Deserialize, Debug, AsChangeset, Queryable, Insertable, Identifiable)]
 #[table_name = "documents"]
-pub struct Document {
+pub struct InsertDocument {
     pub id: Uuid,
     pub project_id: Uuid,
     pub name: String,
@@ -58,43 +76,63 @@ pub struct Document {
     pub body: serde_json::Value,
 }
 
+#[derive(Serialize, Deserialize, Debug, AsChangeset, Queryable, Insertable, Identifiable)]
+#[table_name = "documents"]
+pub struct Document {
+    pub id: Uuid,
+    pub project_id: Uuid,
+    pub name: String,
+    pub doctype: String,
+    pub version: i32,
+    pub body: serde_json::Value,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
+}
+
 impl Project {
     pub fn initialize_new_project(conn: &PgConnection, name: &str) -> Result<Project, DieselError> {
         debug!("initialize_new_project : {}", name);
 
         let mut project = Self::create(conn, &name)?;
 
-        debug!("initialize_new_project : {} : project id : {}", name, project.id);
+        debug!(
+            "initialize_new_project : {} : project id : {}",
+            name, project.id
+        );
 
-        let mut model = Document::create_model_document(conn, &crate::messages::ModelInput {
-            name: name.to_string(),
-            description: None,
-            project_id: project.id,
-        })?;
+        let model = Document::create_model_document(
+            conn,
+            &crate::messages::ModelInput {
+                name: name.to_string(),
+                description: None,
+                project_id: project.id,
+            },
+        )?;
 
-        debug!("initialize_new_project : {} : model id : {}", name, model.id);
+        debug!(
+            "initialize_new_project : {} : model id : {}",
+            name, model.id
+        );
 
         project.model_id = model.id.into();
         let updated_project = diesel::update(projects::table)
+            .filter(projects::id.eq(project.id))
             .set(&project)
             .get_result::<Project>(conn)?;
 
-        let domain = Document::create_domain_document(conn, &project.id, "Domain".into())?;
-        debug!("initialize_new_project : {} : domain id : {}", name, domain.id);
+        let domain = Document::create_domain_document(conn, &project.id, "Domain")?;
+        debug!(
+            "initialize_new_project : {} : domain id : {}",
+            name, domain.id
+        );
 
-        model.body.domain = Some(DocumentReference {
-            id: domain.id,
-            doctype: "domain".to_string(),
-        });
-        let _ = Document::save(conn, &model.as_raw())?;
         Ok(updated_project)
-
     }
 
-    pub fn create(conn: &PgConnection, name: &str) -> Result<Project, DieselError> {
+    fn create(conn: &PgConnection, name: &str) -> Result<Project, DieselError> {
         let id = uuid::Uuid::new_v4();
 
-        let project = Project {
+        let project = NewProject {
             id: id,
             name: name.to_owned(),
             description: name.to_owned(),
@@ -110,22 +148,24 @@ impl Project {
         projects::table.find(id).first::<Project>(conn)
     }
 
-    pub fn find(conn: &PgConnection, paging: Option<QueryPage>) -> Result<Vec<Project>, DieselError> {
-        let p = paging.unwrap_or(QueryPage::default());
+    pub fn find(
+        conn: &PgConnection,
+        paging: Option<QueryPage>,
+    ) -> Result<Vec<Project>, DieselError> {
+        let p = paging.unwrap_or_default();
         if let Some(limit) = p.limit {
-            projects::table.limit(limit.into()).offset(p.offset.unwrap_or(0).into()).load::<Project>(conn)
+            projects::table
+                .limit(limit.into())
+                .offset(p.offset.unwrap_or(0).into())
+                .load::<Project>(conn)
         } else {
             projects::table.load::<Project>(conn)
         }
     }
 
-    /*
-        pub fn delete(id: &str, connection: &PgConnection) -> Result<(), DieselError> {
-            diesel::delete(projects::table.find(id))
-                .execute(connection)?;
-            Ok(())
-        }
-    */
+    pub fn delete_document(conn: &PgConnection, id: &Uuid) -> Result<usize, DieselError> {
+        diesel::delete(documents::table.find(id)).execute(conn)
+    }
 }
 
 pub enum GearsDocument {
@@ -142,9 +182,28 @@ impl Document {
                 doctype: self.doctype.clone(),
                 name: self.name.clone(),
                 version: self.version.clone(),
+                created_at: self.created_at.clone(),
+                updated_at: self.updated_at.clone(),
                 body: serde_json::from_value::<Domain>(self.body.clone()).unwrap(),
             }),
             _ => Err("Not a domain document".to_owned()),
+        }
+    }
+
+    pub fn as_xflow(&self) -> Result<XFlowDocument, String> {
+        debug!("as_xflow {}", &self.doctype.as_str());
+        match &self.doctype.as_str() {
+            &"xflow" => Ok(XFlowDocument {
+                id: self.id,
+                project_id: self.project_id,
+                doctype: self.doctype.clone(),
+                name: self.name.clone(),
+                version: self.version.clone(),
+                created_at: self.created_at.clone(),
+                updated_at: self.updated_at.clone(),
+                body: serde_json::from_value::<XFlow>(self.body.clone()).unwrap(),
+            }),
+            _ => Err("Not a xflow document".to_owned()),
         }
     }
 
@@ -156,6 +215,8 @@ impl Document {
                 doctype: self.doctype.clone(),
                 name: self.name.clone(),
                 version: self.version.clone(),
+                created_at: self.created_at.clone(),
+                updated_at: self.updated_at.clone(),
                 body: serde_json::from_value::<Modelx>(self.body.clone()).unwrap(),
             }),
             _ => Err("Not a modelx document".to_owned()),
@@ -176,6 +237,8 @@ impl Document {
             version: doc.version.to_owned(),
             name: doc.name.to_owned(),
             doctype: doc.doctype.to_owned(),
+            updated_at: doc.updated_at.to_owned(),
+            created_at: doc.created_at.to_owned(),
             body: doc.body.to_owned(),
         }
     }
@@ -221,12 +284,29 @@ impl Document {
         documents::table.find(id).first::<Document>(conn)
     }
 
-    pub fn find_domains(conn: &PgConnection) -> Result<Vec<DomainDocument>, DieselError> {
+    pub fn find_domains(
+        conn: &PgConnection,
+        project_id: &Uuid,
+    ) -> Result<Vec<DomainDocument>, DieselError> {
         Ok(documents::table
             .filter(documents::doctype.eq(&"domain"))
+            .filter(documents::project_id.eq(&project_id))
             .load::<Document>(conn)?
             .iter()
             .map(|res| res.as_domain().unwrap())
+            .collect())
+    }
+
+    pub fn find_xflows(
+        conn: &PgConnection,
+        project_id: &Uuid,
+    ) -> Result<Vec<XFlowDocument>, DieselError> {
+        Ok(documents::table
+            .filter(documents::doctype.eq(&"xflow"))
+            .filter(documents::project_id.eq(&project_id))
+            .load::<Document>(conn)?
+            .iter()
+            .map(|res| res.as_xflow().unwrap())
             .collect())
     }
 
@@ -234,13 +314,3 @@ impl Document {
         diesel::delete(projects::table.find(id)).execute(conn)
     }
 }
-
-/*
-juniper::graphql_union!(<'a> &'a Docco: () as "Document" where Scalar = <S> |&self| {
-    instance_resolvers: |_| {
-        // The left hand side indicates the concrete type T, the right hand
-        // side should be an expression returning Option<T>
-        &DomainDocument => self.as_domain(),
-    }
-});
-*/

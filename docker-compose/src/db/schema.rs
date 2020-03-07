@@ -6,8 +6,6 @@ table! {
         doctype -> Text,
         version -> Int4,
         body -> Jsonb,
-        created_at -> Timestamptz,
-        updated_at -> Timestamptz,
     }
 }
 
@@ -17,9 +15,10 @@ table! {
         name -> Text,
         description -> Text,
         model_id -> Nullable<Uuid>,
-        created_at -> Timestamptz,
-        updated_at -> Timestamptz,
     }
 }
 
-allow_tables_to_appear_in_same_query!(documents, projects,);
+allow_tables_to_appear_in_same_query!(
+    documents,
+    projects,
+);

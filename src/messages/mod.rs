@@ -36,6 +36,28 @@ pub struct DomainInput {
 }
 
 #[derive(juniper::GraphQLInputObject)]
+pub struct ProjectId {
+    pub project_id: Uuid,
+}
+
+#[derive(juniper::GraphQLInputObject)]
+pub struct DocumentId {
+    pub document_id: Uuid,
+}
+
+#[derive(juniper::GraphQLInputObject)]
+pub struct DocumentElementId {
+    pub document_id: Uuid,
+    pub element_id: i32,
+}
+
+#[derive(juniper::GraphQLInputObject)]
+pub struct DocumentIdentifier {
+    pub project_id: Uuid,
+    pub domain_id: Uuid,
+}
+
+#[derive(juniper::GraphQLInputObject)]
 pub struct DomainAddEntityInput {
     pub name: String,
     pub project_id: Uuid,
@@ -43,6 +65,38 @@ pub struct DomainAddEntityInput {
 }
 
 #[derive(juniper::GraphQLInputObject)]
+pub struct DocumentProperties {
+    pub name: Option<String>,
+    pub description: Option<String>,
+}
+
+#[derive(juniper::GraphQLInputObject)]
 pub struct ProjectIdInput {
     pub project_id: Uuid,
+}
+
+#[derive(juniper::GraphQLInputObject)]
+pub struct AttributeInputString {
+    pub default: Option<String>,
+}
+
+#[derive(juniper::GraphQLInputObject)]
+pub struct AttributeInputInteger {
+    pub default: Option<i32>,
+    pub min: Option<i32>,
+    pub max: Option<i32>,
+}
+
+#[derive(juniper::GraphQLInputObject)]
+pub struct AttributeInputBoolean {
+    pub default: Option<bool>,
+}
+
+#[derive(juniper::GraphQLInputObject)]
+pub struct AddStringAttributeToEntity {
+    pub project_id: Uuid,
+    pub domain_id: Uuid,
+    pub entity_id: i32,
+    pub name: String,
+    pub default: Option<String>,
 }
