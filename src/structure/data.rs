@@ -24,13 +24,21 @@ pub enum VTypeContainer {
     VTypeIntegerContainer(VTypeIntegerContainer),
 }
 
+graphql_union!(VTypeContainer: () where Scalar = <S> |&self| {
+    instance_resolvers: |_| {
+        &VTypeStringContainer => match *self { VTypeContainer::VTypeStringContainer(ref h) => Some(h), _ => None },
+        &VTypeBooleanContainer => match *self { VTypeContainer::VTypeBooleanContainer(ref h) => Some(h), _ => None },
+        &VTypeIntegerContainer => match *self { VTypeContainer::VTypeIntegerContainer(ref h) => Some(h), _ => None },
+    }
+});
+
 #[derive(GraphQLObject, Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
 #[graphql(name = "string")]
 pub struct VTypeString {
     pub default: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
+#[derive(GraphQLObject, Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub struct VTypeStringContainer {
     pub value: String,
 }
@@ -40,7 +48,7 @@ pub struct VTypeBoolean {
     pub default: Option<bool>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
+#[derive(GraphQLObject, Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub struct VTypeBooleanContainer {
     pub value: bool,
 }
@@ -52,7 +60,7 @@ pub struct VTypeInteger {
     pub max: Option<i32>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
+#[derive(GraphQLObject, Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub struct VTypeIntegerContainer {
     pub value: i32,
 }

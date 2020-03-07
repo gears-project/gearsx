@@ -31,3 +31,6 @@ r2d2 = "0.8"
 
 [dev-dependencies]
 tempdir =  "0.3"
+
+# [replace]
+# "juniper:0.14.2" = { git = 'https://github.com/graphql-rust/juniper' }

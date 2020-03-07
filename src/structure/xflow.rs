@@ -1,21 +1,51 @@
 #[macro_use]
 use crate as root;
 use std::collections::HashSet;
+use super::data::{VType};
 
 use super::common::{Document};
 
 root::gears_doc!(XFlow, XFlowDocument, xflow);
-// pub type XFlowDocument = Document<XFlow>;
 
-pub type XFlowEdge = (i32, i32);
+#[juniper::object]
+impl XFlowDocument {
+    fn id(&self) -> &Uuid {
+        &self.id
+    }
+
+    fn name(&self) -> &str {
+        &self.name
+    }
+
+    fn doctype(&self) -> &str {
+        &self.doctype
+    }
+
+    fn created_at(&self) -> NaiveDateTime {
+        self.created_at
+    }
+    fn updated_at(&self) -> NaiveDateTime {
+        self.updated_at
+    }
+
+    fn body(&self) -> &XFlow {
+        &self.body
+    }
+}
 
 #[derive(Serialize, Deserialize, Debug, Clone, Eq, PartialEq)]
+pub struct XFlowEdge(i32, i32);
+
+#[derive(GraphQLObject, Serialize, Deserialize, Debug, Clone, Eq, PartialEq)]
 // partof: SPC-serialization-json
 pub struct XFlow {
     pub requirements: Vec<XFlowRequirement>,
     pub variables: XFlowVariables,
+    #[graphql(skip)]
     pub nodes: Vec<XFlowNode>,
+    #[graphql(skip)]
     pub edges: Vec<XFlowEdge>,
+    #[graphql(skip)]
     pub branches: Vec<XFlowBranch>,
 }
 
@@ -28,7 +58,7 @@ pub enum XFlowError {
     NodeNotFound,
 }
 
-#[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
+#[derive(GraphQLEnum, Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
 // partof: #SPC-serialization-json
 pub enum XFlowValueType {
     #[serde(rename = "string")]
@@ -47,6 +77,14 @@ pub enum XFlowValue {
     Boolean(bool),
 }
 
+graphql_union!(XFlowValue: () where Scalar = <S> |&self| {
+    instance_resolvers: |_| {
+        &String => match *self { XFlowValue::String(ref h) => Some(h), _ => None },
+        &i32 => match *self { XFlowValue::Integer(ref h) => Some(h), _ => None },
+        &bool => match *self { XFlowValue::Boolean(ref h) => Some(h), _ => None },
+    }
+});
+
 impl XFlowValue {
     pub fn string_value(&self) -> String {
         match *self {
@@ -62,33 +100,33 @@ impl XFlowValue {
         }
     }
 }
-#[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
+#[derive(GraphQLObject, Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub struct XFlowRequirement {
     pub xtype: XFlowNodeType,
     pub version: i32,
 }
 
-#[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
+#[derive(GraphQLObject, Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub struct XFlowVariableDefinition {
     pub name: String,
     pub vtype: XFlowValueType,
 }
 
-#[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
+#[derive(GraphQLObject, Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub struct XFlowVariable {
     pub name: String,
     pub vtype: XFlowValueType,
     pub value: XFlowValue,
 }
 
-#[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
+#[derive(GraphQLObject, Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub struct XFlowVariables {
     pub input: Vec<XFlowVariableDefinition>,
     pub local: Vec<XFlowVariable>,
     pub output: Vec<XFlowVariableDefinition>,
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+#[derive(GraphQLObject, Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 pub struct XFlowNode {
     pub id: i32,
     pub nodetype: XFlowNodeType,
@@ -97,7 +135,7 @@ pub struct XFlowNode {
     pub parameters: XFlowNodeParameters,
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Clone, Hash, Eq)]
+#[derive(GraphQLEnum, Serialize, Deserialize, Debug, PartialEq, Clone, Hash, Eq)]
 pub enum XFlowNodeType {
     #[serde(rename = "flow")]
     Flow,
@@ -117,7 +155,15 @@ pub enum XFlowNodeParameters {
     Call(CallParameters),
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+graphql_union!(XFlowNodeParameters: () where Scalar = <S> |&self| {
+    instance_resolvers: |_| {
+        &FlowParameters => match *self { XFlowNodeParameters::Flow(ref h) => Some(h), _ => None },
+        &FloxParameters => match *self { XFlowNodeParameters::Flox(ref h) => Some(h), _ => None },
+        &CallParameters => match *self { XFlowNodeParameters::Call(ref h) => Some(h), _ => None },
+    }
+});
+
+#[derive(GraphQLObject, Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 pub struct FlowParameters {}
 
 impl Default for FlowParameters {
@@ -126,17 +172,18 @@ impl Default for FlowParameters {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+#[derive(GraphQLObject, Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 pub struct FloxParameters {
     pub expression: String,
     pub returns: XFlowVariableDefinition,
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+#[derive(GraphQLObject, Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 pub struct CallParameters {}
 
-#[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
+#[derive(GraphQLObject, Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub struct XFlowBranch {
+    #[graphql(skip)]
     pub edge: XFlowEdge,
     pub xvar: XFlowVariable,
 }
@@ -337,7 +384,8 @@ impl Default for XFlow {
         });
 
         let mut edges = Vec::<XFlowEdge>::new();
-        edges.push((1, 2));
+        // edges.push((1, 2));
+        edges.push(XFlowEdge(1, 2));
 
         let mut requirements = Vec::<XFlowRequirement>::new();
         requirements.push(XFlowRequirement {

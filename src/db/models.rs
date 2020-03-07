@@ -6,6 +6,7 @@ use crate::graphql::schema;
 use crate::messages::QueryPage;
 use crate::structure::common::RawDocument;
 use crate::structure::domain::{Domain, DomainDocument};
+use crate::structure::xflow::{XFlow, XFlowDocument};
 use crate::structure::modelx::{Modelx, ModelxDocument};
 use chrono::NaiveDateTime;
 use diesel::pg::PgConnection;
@@ -189,6 +190,23 @@ impl Document {
         }
     }
 
+    pub fn as_xflow(&self) -> Result<XFlowDocument, String> {
+        debug!("as_xflow {}", &self.doctype.as_str());
+        match &self.doctype.as_str() {
+            &"xflow" => Ok(XFlowDocument {
+                id: self.id,
+                project_id: self.project_id,
+                doctype: self.doctype.clone(),
+                name: self.name.clone(),
+                version: self.version.clone(),
+                created_at: self.created_at.clone(),
+                updated_at: self.updated_at.clone(),
+                body: serde_json::from_value::<XFlow>(self.body.clone()).unwrap(),
+            }),
+            _ => Err("Not a xflow document".to_owned()),
+        }
+    }
+
     pub fn as_modelx(&self) -> Result<ModelxDocument, String> {
         match &self.doctype.as_str() {
             &"modelx" => Ok(ModelxDocument {
@@ -276,6 +294,19 @@ impl Document {
             .load::<Document>(conn)?
             .iter()
             .map(|res| res.as_domain().unwrap())
+            .collect())
+    }
+
+    pub fn find_xflows(
+        conn: &PgConnection,
+        project_id: &Uuid,
+    ) -> Result<Vec<XFlowDocument>, DieselError> {
+        Ok(documents::table
+            .filter(documents::doctype.eq(&"xflow"))
+            .filter(documents::project_id.eq(&project_id))
+            .load::<Document>(conn)?
+            .iter()
+            .map(|res| res.as_xflow().unwrap())
             .collect())
     }
 
