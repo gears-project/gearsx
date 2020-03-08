@@ -1,3 +1,12 @@
+use std::collections::{HashMap, HashSet};
+
+#[derive(GraphQLObject, Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
+pub struct Primitive {
+    pub id: i32,
+    pub name: String,
+    pub vtype: VType,
+}
+
 #[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
 #[serde(tag = "type")]
 pub enum VType {
@@ -116,6 +125,63 @@ impl VTypePrimitive for VTypeInteger {
         }
         true
     }
+}
+
+#[derive(GraphQLObject, Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
+pub struct DocumentData {
+    pub input: Vec<Primitive>,
+    pub local: Vec<Primitive>,
+    pub output: Vec<Primitive>,
+}
+
+impl Default for DocumentData {
+    fn default() -> Self {
+        Self {
+            input: Vec::<Primitive>::new(),
+            local: Vec::<Primitive>::new(),
+            output: Vec::<Primitive>::new(),
+        }
+    }
+}
+
+impl DocumentData {
+    pub fn get_all_ids(&self) -> HashSet<i32> {
+        let mut ids = HashSet::<i32>::new();
+
+        self.input.iter().map(|p| {
+            ids.insert(p.id)
+        });
+
+        ids
+    }
+
+//    /// Get a `HashSet` of all variable names in input, local and output
+//    ///
+//    /// # Example
+//    /// ```
+//    /// use gears::structure::xflow::{XFlow};
+//    /// let xfs = XFlow::default();
+//    /// let names = xfs.get_all_variable_names();
+//    /// assert_eq!(names.len(), 0);
+//    /// ```
+//    pub fn all_variable_names(&self) -> HashSet<String> {
+//        let mut vars = HashSet::<String>::new();
+//
+//        for xvar in &self.variables.input {
+//            vars.insert(xvar.name.clone());
+//        }
+//
+//        for xvar in &self.variables.local {
+//            vars.insert(xvar.name.clone());
+//        }
+//
+//        for xvar in &self.variables.output {
+//            vars.insert(xvar.name.clone());
+//        }
+//
+//        vars
+//    }
+
 }
 
 mod test {

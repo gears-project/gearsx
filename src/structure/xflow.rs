@@ -1,7 +1,7 @@
 #[macro_use]
 use crate as root;
 use std::collections::HashSet;
-use super::data::{VType};
+use super::data::{DocumentData, VType};
 
 use super::common::{Document};
 
@@ -40,8 +40,7 @@ pub struct XFlowEdge(i32, i32);
 // partof: SPC-serialization-json
 pub struct XFlow {
     pub requirements: Vec<XFlowRequirement>,
-    pub variables: XFlowVariables,
-    #[graphql(skip)]
+    pub variables: DocumentData,
     pub nodes: Vec<XFlowNode>,
     #[graphql(skip)]
     pub edges: Vec<XFlowEdge>,
@@ -228,33 +227,6 @@ impl XFlow {
             .collect()
     }
 
-    /// Get a `HashSet` of all variable names in input, local and output
-    ///
-    /// # Example
-    /// ```
-    /// use gears::structure::xflow::{XFlow};
-    /// let xfs = XFlow::default();
-    /// let names = xfs.get_all_variable_names();
-    /// assert_eq!(names.len(), 0);
-    /// ```
-    pub fn all_variable_names(&self) -> HashSet<String> {
-        let mut vars = HashSet::<String>::new();
-
-        for xvar in &self.variables.input {
-            vars.insert(xvar.name.clone());
-        }
-
-        for xvar in &self.variables.local {
-            vars.insert(xvar.name.clone());
-        }
-
-        for xvar in &self.variables.output {
-            vars.insert(xvar.name.clone());
-        }
-
-        vars
-    }
-
     pub fn get_in_edges(&self, node: &XFlowNode) -> Vec<&XFlowEdge> {
 
         self.edges
@@ -331,29 +303,6 @@ impl XFlow {
         }
     }
 
-    pub fn get_all_variable_names(&self) -> HashSet<String> {
-        let mut names = HashSet::<String>::new();
-
-        for xvar in &self.variables.local {
-            if !names.contains(&xvar.name) {
-                names.insert(xvar.name.clone());
-            }
-        }
-
-        for xvar in &self.variables.input {
-            if !names.contains(&xvar.name) {
-                names.insert(xvar.name.clone());
-            }
-        }
-
-        for xvar in &self.variables.output {
-            if !names.contains(&xvar.name) {
-                names.insert(xvar.name.clone());
-            }
-        }
-
-        names
-    }
 }
 
 impl Default for XFlow {
@@ -395,11 +344,7 @@ impl Default for XFlow {
 
         XFlow {
             requirements: requirements,
-            variables: XFlowVariables {
-                input: Vec::<XFlowVariableDefinition>::new(),
-                local: Vec::<XFlowVariable>::new(),
-                output: Vec::<XFlowVariableDefinition>::new(),
-            },
+            variables: DocumentData::default(),
             nodes: nodes,
             edges: edges,
             branches: Vec::<XFlowBranch>::new(),
