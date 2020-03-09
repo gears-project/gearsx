@@ -57,75 +57,11 @@ pub enum XFlowError {
     NodeNotFound,
 }
 
-#[derive(GraphQLEnum, Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
-// partof: #SPC-serialization-json
-pub enum XFlowValueType {
-    #[serde(rename = "string")]
-    String,
-    #[serde(rename = "number")]
-    Integer,
-    #[serde(rename = "boolean")]
-    Boolean,
-}
-
-#[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
-#[serde(untagged)]
-pub enum XFlowValue {
-    String(String),
-    Integer(i32),
-    Boolean(bool),
-}
-
-graphql_union!(XFlowValue: () where Scalar = <S> |&self| {
-    instance_resolvers: |_| {
-        &String => match *self { XFlowValue::String(ref h) => Some(h), _ => None },
-        &i32 => match *self { XFlowValue::Integer(ref h) => Some(h), _ => None },
-        &bool => match *self { XFlowValue::Boolean(ref h) => Some(h), _ => None },
-    }
-});
-
-impl XFlowValue {
-    pub fn string_value(&self) -> String {
-        match *self {
-            XFlowValue::String(ref s) => s.clone(),
-            XFlowValue::Integer(ref i) => i.to_string(),
-            XFlowValue::Boolean(ref b) => {
-                if *b {
-                    "true".to_owned()
-                } else {
-                    "false".to_owned()
-                }
-            }
-        }
-    }
-}
 #[derive(GraphQLObject, Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub struct XFlowRequirement {
     pub xtype: XFlowNodeType,
     pub version: i32,
 }
-
-/*
-#[derive(GraphQLObject, Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
-pub struct VariableDefinition {
-    pub name: String,
-    pub vtype: XFlowValueType,
-}
-
-#[derive(GraphQLObject, Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
-pub struct XFlowVariable {
-    pub name: String,
-    pub vtype: XFlowValueType,
-    pub value: XFlowValue,
-}
-
-#[derive(GraphQLObject, Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
-pub struct XFlowVariables {
-    pub input: Vec<VariableDefinition>,
-    pub local: Vec<XFlowVariable>,
-    pub output: Vec<VariableDefinition>,
-}
-*/
 
 #[derive(GraphQLObject, Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 pub struct XFlowNode {
