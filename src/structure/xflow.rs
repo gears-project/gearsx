@@ -1,5 +1,6 @@
 #[macro_use]
 use crate as root;
+use serde_tuple::*;
 use std::collections::HashSet;
 use super::data::{DocumentVariables, VariableDefinition};
 
@@ -27,14 +28,16 @@ impl XFlowDocument {
     fn updated_at(&self) -> NaiveDateTime {
         self.updated_at
     }
-
     fn body(&self) -> &XFlow {
         &self.body
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Eq, PartialEq)]
-pub struct XFlowEdge(i32, i32);
+#[derive(GraphQLObject, Serialize_tuple, Deserialize_tuple, Debug, Clone, Eq, PartialEq)]
+pub struct XFlowEdge {
+    pub source: i32,
+    pub target: i32,
+}
 
 #[derive(GraphQLObject, Serialize, Deserialize, Debug, Clone, Eq, PartialEq)]
 // partof: SPC-serialization-json
@@ -42,9 +45,7 @@ pub struct XFlow {
     pub requirements: Vec<XFlowRequirement>,
     pub variables: DocumentVariables,
     pub nodes: Vec<XFlowNode>,
-    #[graphql(skip)]
     pub edges: Vec<XFlowEdge>,
-    #[graphql(skip)]
     pub branches: Vec<XFlowBranch>,
 }
 
@@ -170,7 +171,7 @@ impl XFlow {
         self.edges
             .iter()
             .filter({
-                |edge| edge.1 == node.id
+                |edge| edge.target == node.id
             })
             .collect()
     }
@@ -180,7 +181,7 @@ impl XFlow {
         self.edges
             .iter()
             .filter({
-                |edge| edge.0 == node.id
+                |edge| edge.source == node.id
             })
             .collect()
     }
@@ -190,7 +191,7 @@ impl XFlow {
         self.branches
             .iter()
             .filter({
-                |branch| edge.0 == branch.edge.0 && edge.1 == branch.edge.1
+                |branch| edge.source == branch.edge.source && edge.target == branch.edge.target
             })
             .collect()
     }
@@ -200,7 +201,7 @@ impl XFlow {
         self.branches
             .iter()
             .filter({
-                |branch| branch.edge.0 == id
+                |branch| branch.edge.source == id
             })
             .collect()
     }
@@ -240,7 +241,6 @@ impl XFlow {
             _ => None,
         }
     }
-
 }
 
 impl Default for XFlow {
@@ -271,8 +271,10 @@ impl Default for XFlow {
         });
 
         let mut edges = Vec::<XFlowEdge>::new();
-        // edges.push((1, 2));
-        edges.push(XFlowEdge(1, 2));
+        edges.push(XFlowEdge {
+            source: 1,
+            target: 2
+        });
 
         let mut requirements = Vec::<XFlowRequirement>::new();
         requirements.push(XFlowRequirement {
