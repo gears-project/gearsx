@@ -1,7 +1,7 @@
 #[macro_use]
 use crate as root;
 use std::collections::HashSet;
-use super::data::{DocumentData, VType};
+use super::data::{DocumentVariables, VariableDefinition};
 
 use super::common::{Document};
 
@@ -40,7 +40,7 @@ pub struct XFlowEdge(i32, i32);
 // partof: SPC-serialization-json
 pub struct XFlow {
     pub requirements: Vec<XFlowRequirement>,
-    pub variables: DocumentData,
+    pub variables: DocumentVariables,
     pub nodes: Vec<XFlowNode>,
     #[graphql(skip)]
     pub edges: Vec<XFlowEdge>,
@@ -105,8 +105,9 @@ pub struct XFlowRequirement {
     pub version: i32,
 }
 
+/*
 #[derive(GraphQLObject, Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
-pub struct XFlowVariableDefinition {
+pub struct VariableDefinition {
     pub name: String,
     pub vtype: XFlowValueType,
 }
@@ -120,10 +121,11 @@ pub struct XFlowVariable {
 
 #[derive(GraphQLObject, Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub struct XFlowVariables {
-    pub input: Vec<XFlowVariableDefinition>,
+    pub input: Vec<VariableDefinition>,
     pub local: Vec<XFlowVariable>,
-    pub output: Vec<XFlowVariableDefinition>,
+    pub output: Vec<VariableDefinition>,
 }
+*/
 
 #[derive(GraphQLObject, Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 pub struct XFlowNode {
@@ -174,7 +176,7 @@ impl Default for FlowParameters {
 #[derive(GraphQLObject, Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 pub struct FloxParameters {
     pub expression: String,
-    pub returns: XFlowVariableDefinition,
+    pub returns: VariableDefinition,
 }
 
 #[derive(GraphQLObject, Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
@@ -184,7 +186,7 @@ pub struct CallParameters {}
 pub struct XFlowBranch {
     #[graphql(skip)]
     pub edge: XFlowEdge,
-    pub xvar: XFlowVariable,
+    pub xvar: VariableDefinition,
 }
 
 impl XFlow {
@@ -344,7 +346,7 @@ impl Default for XFlow {
 
         XFlow {
             requirements: requirements,
-            variables: DocumentData::default(),
+            variables: DocumentVariables::default(),
             nodes: nodes,
             edges: edges,
             branches: Vec::<XFlowBranch>::new(),

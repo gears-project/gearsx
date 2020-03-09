@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
 #[derive(GraphQLObject, Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
-pub struct Primitive {
+pub struct VariableDefinition {
     pub id: i32,
     pub name: String,
     pub vtype: VType,
@@ -74,7 +74,7 @@ pub struct VTypeIntegerContainer {
     pub value: i32,
 }
 
-pub trait VTypePrimitive {
+pub trait VTypeVariableDefinition {
     type Container;
     fn new_instance(&self) -> Self::Container;
     fn is_consistent(&self) -> bool {
@@ -82,7 +82,7 @@ pub trait VTypePrimitive {
     }
 }
 
-impl VTypePrimitive for VTypeString {
+impl VTypeVariableDefinition for VTypeString {
     type Container = VTypeStringContainer;
 
     fn new_instance(&self) -> Self::Container {
@@ -92,7 +92,7 @@ impl VTypePrimitive for VTypeString {
     }
 }
 
-impl VTypePrimitive for VTypeBoolean {
+impl VTypeVariableDefinition for VTypeBoolean {
     type Container = VTypeBooleanContainer;
 
     fn new_instance(&self) -> Self::Container {
@@ -102,7 +102,7 @@ impl VTypePrimitive for VTypeBoolean {
     }
 }
 
-impl VTypePrimitive for VTypeInteger {
+impl VTypeVariableDefinition for VTypeInteger {
     type Container = VTypeIntegerContainer;
 
     fn new_instance(&self) -> Self::Container {
@@ -128,29 +128,31 @@ impl VTypePrimitive for VTypeInteger {
 }
 
 #[derive(GraphQLObject, Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
-pub struct DocumentData {
-    pub input: Vec<Primitive>,
-    pub local: Vec<Primitive>,
-    pub output: Vec<Primitive>,
+pub struct DocumentVariables {
+    pub input: Vec<VariableDefinition>,
+    pub local: Vec<VariableDefinition>,
+    pub output: Vec<VariableDefinition>,
 }
 
-impl Default for DocumentData {
+impl Default for DocumentVariables {
     fn default() -> Self {
         Self {
-            input: Vec::<Primitive>::new(),
-            local: Vec::<Primitive>::new(),
-            output: Vec::<Primitive>::new(),
+            input: Vec::<VariableDefinition>::new(),
+            local: Vec::<VariableDefinition>::new(),
+            output: Vec::<VariableDefinition>::new(),
         }
     }
 }
 
-impl DocumentData {
+impl DocumentVariables {
     pub fn get_all_ids(&self) -> HashSet<i32> {
         let mut ids = HashSet::<i32>::new();
 
-        self.input.iter().map(|p| {
+        let _ = self.input.iter().map(|p| {
             ids.insert(p.id)
         });
+
+        unimplemented!();
 
         ids
     }
@@ -187,7 +189,7 @@ impl DocumentData {
 mod test {
     #[test]
     fn test_vtype_string() {
-        use super::VTypePrimitive;
+        use super::VTypeVariableDefinition;
         let vtype = super::VTypeString {
             default: Some((&"thing").to_string()),
         };
@@ -198,7 +200,7 @@ mod test {
 
     #[test]
     fn test_vtype_boolean() {
-        use super::VTypePrimitive;
+        use super::VTypeVariableDefinition;
         let vtype = super::VTypeBoolean {
             default: Some(true),
         };
@@ -209,7 +211,7 @@ mod test {
 
     #[test]
     fn test_vtype_integer() {
-        use super::VTypePrimitive;
+        use super::VTypeVariableDefinition;
         let vtype = super::VTypeInteger {
             default: Some(200),
             min: Some(0),
