@@ -258,6 +258,21 @@ impl Document {
         Ok(res.as_domain().unwrap())
     }
 
+    pub fn create_xflow_document(
+        conn: &PgConnection,
+        project_id: &Uuid,
+        name: &str,
+    ) -> Result<XFlowDocument, DieselError> {
+        let mut doc = XFlowDocument::new(&project_id, "xflow".to_owned());
+        doc.name = name.to_owned();
+        let record = Self::from_raw(&doc.as_raw());
+
+        let res: Self = diesel::insert_into(documents::table)
+            .values(record)
+            .get_result(conn)?;
+        Ok(res.as_xflow().unwrap())
+    }
+
     pub fn create_model_document(
         conn: &PgConnection,
         input: &crate::messages::ModelInput,

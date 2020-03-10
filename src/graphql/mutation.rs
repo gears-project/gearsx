@@ -4,6 +4,7 @@ use super::schema::Context;
 use crate::db::models::{Document as DocumentDAO, Project as ProjectDAO};
 use crate::messages::*;
 use crate::structure::domain::{Attribute, DomainDocument, Entity};
+use crate::structure::xflow::{XFlowDocument};
 use crate::structure::modelx::ModelxDocument;
 use juniper::FieldResult;
 
@@ -23,7 +24,17 @@ impl MutationRoot {
         Ok(1)
     }
 
-    fn add_domain(context: &Context, domain: DomainInput) -> FieldResult<DomainDocument> {
+    fn add_xflow(context: &Context, doc: NewDocument) -> FieldResult<XFlowDocument> {
+        debug!("add_xflow : {}", doc.name);
+        let mut conn = context.dbpool.get()?;
+        Ok(DocumentDAO::create_xflow_document(
+            &conn,
+            &doc.project_id,
+            &doc.name,
+        )?)
+    }
+
+    fn add_domain(context: &Context, domain: NewDocument) -> FieldResult<DomainDocument> {
         debug!("add_domain : {}", domain.name);
         let mut conn = context.dbpool.get()?;
         Ok(DocumentDAO::create_domain_document(

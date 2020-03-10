@@ -29,7 +29,7 @@ pub struct ModelInput {
 }
 
 #[derive(juniper::GraphQLInputObject)]
-pub struct DomainInput {
+pub struct NewDocument {
     pub name: String,
     pub description: Option<String>,
     pub project_id: Uuid,
