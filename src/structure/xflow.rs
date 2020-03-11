@@ -2,7 +2,7 @@
 use crate as root;
 use serde_tuple::*;
 use std::collections::HashSet;
-use super::data::{DocumentVariables, VariableDefinition};
+use super::data::{DocumentVariables, VariableDefinition, Position};
 
 use super::common::{Document};
 
@@ -68,6 +68,7 @@ pub struct XFlowRequirement {
 pub struct XFlowNode {
     pub id: i32,
     pub nodetype: XFlowNodeType,
+    pub position: Position,
     pub action: String,
     pub label: String,
     pub parameters: XFlowNodeParameters,
@@ -260,6 +261,10 @@ impl Default for XFlow {
             nodetype: XFlowNodeType::Flow,
             action: "start".to_owned(),
             label: "Start".to_owned(),
+            position: Position {
+                x: 0,
+                y: 0,
+            },
             parameters: XFlowNodeParameters::Flow(FlowParameters::default()),
         });
         nodes.push(XFlowNode {
@@ -267,6 +272,10 @@ impl Default for XFlow {
             nodetype: XFlowNodeType::Flow,
             action: "end".to_owned(),
             label: "End".to_owned(),
+            position: Position {
+                x: 200,
+                y: 0,
+            },
             parameters: XFlowNodeParameters::Flow(FlowParameters::default()),
         });
 

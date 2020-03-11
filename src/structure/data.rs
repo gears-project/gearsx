@@ -1,4 +1,12 @@
 use std::collections::{HashMap, HashSet};
+use serde_tuple::*;
+
+#[derive(GraphQLObject, Serialize_tuple, Deserialize_tuple, Debug, Clone, Eq, PartialEq)]
+pub struct Position {
+    pub x: i32,
+    pub y: i32,
+}
+
 
 #[derive(GraphQLObject, Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub struct VariableDefinition {

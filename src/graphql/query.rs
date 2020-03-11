@@ -44,4 +44,11 @@ impl QueryRoot {
         Ok(documents)
     }
 
+    #[graphql(description = "Fetch a xflow document by id")]
+    fn xflow(context: &Context, input: DocumentId) -> FieldResult<XFlowDocument> {
+        let mut conn = context.dbpool.get()?;
+        let doc = DBDocument::by_id(&conn, &input.document_id)?.as_xflow()?;
+        Ok(doc)
+    }
+
 }
