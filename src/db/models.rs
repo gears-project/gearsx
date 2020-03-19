@@ -3,7 +3,7 @@ use crate::diesel::ExpressionMethods;
 use crate::diesel::QueryDsl;
 use crate::diesel::RunQueryDsl;
 use crate::graphql::schema;
-use crate::messages::QueryPage;
+use crate::messages::{QueryPage, CommonPropertiesUpdate};
 use crate::structure::common::RawDocument;
 use crate::structure::domain::{Domain, DomainDocument};
 use crate::structure::xflow::{XFlow, XFlowDocument};
@@ -146,6 +146,19 @@ impl Project {
 
     pub fn by_id(conn: &PgConnection, id: &Uuid) -> Result<Project, DieselError> {
         projects::table.find(id).first::<Project>(conn)
+    }
+
+    pub fn update_project(conn: &PgConnection, input: CommonPropertiesUpdate) -> Result<Project, DieselError> {
+        let mut project = Self::by_id(conn, &input.id)?;
+        project.name = input.name;
+        if let Some(description) = input.description {
+            project.description = description;
+        }
+        let updated_project = diesel::update(projects::table)
+            .filter(projects::id.eq(project.id))
+            .set(&project)
+            .get_result::<Project>(conn)?;
+        Ok(updated_project)
     }
 
     pub fn find(

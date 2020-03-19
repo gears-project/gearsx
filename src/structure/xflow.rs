@@ -273,7 +273,7 @@ impl Default for XFlow {
             action: "end".to_owned(),
             label: "End".to_owned(),
             position: Position {
-                x: 200,
+                x: 1000,
                 y: 0,
             },
             parameters: XFlowNodeParameters::Flow(FlowParameters::default()),

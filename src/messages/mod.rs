@@ -22,6 +22,13 @@ pub struct ProjectInput {
 }
 
 #[derive(juniper::GraphQLInputObject)]
+pub struct CommonPropertiesUpdate {
+    pub id: Uuid,
+    pub name: String,
+    pub description: Option<String>,
+}
+
+#[derive(juniper::GraphQLInputObject)]
 pub struct ModelInput {
     pub name: String,
     pub description: Option<String>,

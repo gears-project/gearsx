@@ -1,6 +1,7 @@
 use juniper;
 
 use super::schema::Context;
+use uuid::Uuid;
 use crate::db::models::{Document as DocumentDAO, Project as ProjectDAO};
 use crate::messages::*;
 use crate::structure::domain::{Attribute, DomainDocument, Entity};
@@ -16,6 +17,11 @@ impl MutationRoot {
         debug!("init_new_project : {}", project.name);
         let mut conn = context.dbpool.get()?;
         Ok(ProjectDAO::initialize_new_project(&conn, &project.name)?)
+    }
+
+    fn update_project(context: &Context, input: CommonPropertiesUpdate) -> FieldResult<ProjectDAO> {
+        let mut conn = context.dbpool.get()?;
+        Ok(ProjectDAO::update_project(&conn, input)?)
     }
 
     fn delete_project(context: &Context, input: ProjectIdInput) -> FieldResult<i32> {
@@ -34,20 +40,20 @@ impl MutationRoot {
         )?)
     }
 
-    fn add_domain(context: &Context, domain: NewDocument) -> FieldResult<DomainDocument> {
-        debug!("add_domain : {}", domain.name);
+    fn add_domain(context: &Context, doc: NewDocument) -> FieldResult<DomainDocument> {
+        debug!("add_domain : {}", doc.name);
         let mut conn = context.dbpool.get()?;
         Ok(DocumentDAO::create_domain_document(
             &conn,
-            &domain.project_id,
-            &domain.name,
+            &doc.project_id,
+            &doc.name,
         )?)
     }
 
-    fn delete_document(context: &Context, input: DocumentId) -> FieldResult<i32> {
+    fn delete_document(context: &Context, input: DocumentId) -> FieldResult<Uuid> {
         let mut conn = context.dbpool.get()?;
         let res = ProjectDAO::delete_document(&conn, &input.document_id)?;
-        Ok(1)
+        Ok(input.document_id)
     }
 
     fn add_model(context: &Context, input: ModelInput) -> FieldResult<ModelxDocument> {
