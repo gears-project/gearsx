@@ -3,7 +3,7 @@ use crate::diesel::ExpressionMethods;
 use crate::diesel::QueryDsl;
 use crate::diesel::RunQueryDsl;
 use crate::graphql::schema;
-use crate::messages::QueryPage;
+use crate::messages::{QueryPage, CommonPropertiesUpdate};
 use crate::structure::common::RawDocument;
 use crate::structure::domain::{Domain, DomainDocument};
 use crate::structure::xflow::{XFlow, XFlowDocument};
@@ -148,6 +148,19 @@ impl Project {
         projects::table.find(id).first::<Project>(conn)
     }
 
+    pub fn update_project(conn: &PgConnection, input: CommonPropertiesUpdate) -> Result<Project, DieselError> {
+        let mut project = Self::by_id(conn, &input.id)?;
+        project.name = input.name;
+        if let Some(description) = input.description {
+            project.description = description;
+        }
+        let updated_project = diesel::update(projects::table)
+            .filter(projects::id.eq(project.id))
+            .set(&project)
+            .get_result::<Project>(conn)?;
+        Ok(updated_project)
+    }
+
     pub fn find(
         conn: &PgConnection,
         paging: Option<QueryPage>,
@@ -256,6 +269,21 @@ impl Document {
             .values(record)
             .get_result(conn)?;
         Ok(res.as_domain().unwrap())
+    }
+
+    pub fn create_xflow_document(
+        conn: &PgConnection,
+        project_id: &Uuid,
+        name: &str,
+    ) -> Result<XFlowDocument, DieselError> {
+        let mut doc = XFlowDocument::new(&project_id, "xflow".to_owned());
+        doc.name = name.to_owned();
+        let record = Self::from_raw(&doc.as_raw());
+
+        let res: Self = diesel::insert_into(documents::table)
+            .values(record)
+            .get_result(conn)?;
+        Ok(res.as_xflow().unwrap())
     }
 
     pub fn create_model_document(

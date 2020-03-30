@@ -1,9 +1,11 @@
 use juniper;
 
 use super::schema::Context;
+use uuid::Uuid;
 use crate::db::models::{Document as DocumentDAO, Project as ProjectDAO};
 use crate::messages::*;
 use crate::structure::domain::{Attribute, DomainDocument, Entity};
+use crate::structure::xflow::{XFlowDocument};
 use crate::structure::modelx::ModelxDocument;
 use juniper::FieldResult;
 
@@ -17,26 +19,41 @@ impl MutationRoot {
         Ok(ProjectDAO::initialize_new_project(&conn, &project.name)?)
     }
 
+    fn update_project(context: &Context, input: CommonPropertiesUpdate) -> FieldResult<ProjectDAO> {
+        let mut conn = context.dbpool.get()?;
+        Ok(ProjectDAO::update_project(&conn, input)?)
+    }
+
     fn delete_project(context: &Context, input: ProjectIdInput) -> FieldResult<i32> {
         let mut conn = context.dbpool.get()?;
         let res = DocumentDAO::delete_project(&conn, &input.project_id)?;
         Ok(1)
     }
 
-    fn add_domain(context: &Context, domain: DomainInput) -> FieldResult<DomainDocument> {
-        debug!("add_domain : {}", domain.name);
+    fn add_xflow(context: &Context, doc: NewDocument) -> FieldResult<XFlowDocument> {
+        debug!("add_xflow : {}", doc.name);
         let mut conn = context.dbpool.get()?;
-        Ok(DocumentDAO::create_domain_document(
+        Ok(DocumentDAO::create_xflow_document(
             &conn,
-            &domain.project_id,
-            &domain.name,
+            &doc.project_id,
+            &doc.name,
         )?)
     }
 
-    fn delete_document(context: &Context, input: DocumentId) -> FieldResult<i32> {
+    fn add_domain(context: &Context, doc: NewDocument) -> FieldResult<DomainDocument> {
+        debug!("add_domain : {}", doc.name);
+        let mut conn = context.dbpool.get()?;
+        Ok(DocumentDAO::create_domain_document(
+            &conn,
+            &doc.project_id,
+            &doc.name,
+        )?)
+    }
+
+    fn delete_document(context: &Context, input: DocumentId) -> FieldResult<Uuid> {
         let mut conn = context.dbpool.get()?;
         let res = ProjectDAO::delete_document(&conn, &input.document_id)?;
-        Ok(1)
+        Ok(input.document_id)
     }
 
     fn add_model(context: &Context, input: ModelInput) -> FieldResult<ModelxDocument> {
