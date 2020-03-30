@@ -1,7 +1,7 @@
 use super::schema::Context;
 use crate::db::models::{Document as DBDocument, Project as DBProject};
 use crate::messages::*;
-use crate::structure::domain::{Attribute, DomainDocument, Entity};
+use crate::structure::domain::{DomainDocument};
 use crate::structure::xflow::{XFlowDocument};
 use juniper;
 use juniper::FieldResult;
@@ -42,6 +42,13 @@ impl QueryRoot {
         let mut conn = context.dbpool.get()?;
         let documents = DBDocument::find_xflows(&conn, &input.project_id)?;
         Ok(documents)
+    }
+
+    #[graphql(description = "Fetch a xflow document by id")]
+    fn xflow(context: &Context, input: DocumentId) -> FieldResult<XFlowDocument> {
+        let mut conn = context.dbpool.get()?;
+        let doc = DBDocument::by_id(&conn, &input.document_id)?.as_xflow()?;
+        Ok(doc)
     }
 
 }

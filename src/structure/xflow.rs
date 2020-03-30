@@ -1,7 +1,8 @@
 #[macro_use]
 use crate as root;
+use serde_tuple::*;
 use std::collections::HashSet;
-use super::data::{VType};
+use super::data::{DocumentVariables, VariableDefinition, Position};
 
 use super::common::{Document};
 
@@ -27,25 +28,24 @@ impl XFlowDocument {
     fn updated_at(&self) -> NaiveDateTime {
         self.updated_at
     }
-
     fn body(&self) -> &XFlow {
         &self.body
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Eq, PartialEq)]
-pub struct XFlowEdge(i32, i32);
+#[derive(GraphQLObject, Serialize_tuple, Deserialize_tuple, Debug, Clone, Eq, PartialEq)]
+pub struct XFlowEdge {
+    pub source: i32,
+    pub target: i32,
+}
 
 #[derive(GraphQLObject, Serialize, Deserialize, Debug, Clone, Eq, PartialEq)]
 // partof: SPC-serialization-json
 pub struct XFlow {
     pub requirements: Vec<XFlowRequirement>,
-    pub variables: XFlowVariables,
-    #[graphql(skip)]
+    pub variables: DocumentVariables,
     pub nodes: Vec<XFlowNode>,
-    #[graphql(skip)]
     pub edges: Vec<XFlowEdge>,
-    #[graphql(skip)]
     pub branches: Vec<XFlowBranch>,
 }
 
@@ -58,78 +58,17 @@ pub enum XFlowError {
     NodeNotFound,
 }
 
-#[derive(GraphQLEnum, Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
-// partof: #SPC-serialization-json
-pub enum XFlowValueType {
-    #[serde(rename = "string")]
-    String,
-    #[serde(rename = "number")]
-    Integer,
-    #[serde(rename = "boolean")]
-    Boolean,
-}
-
-#[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
-#[serde(untagged)]
-pub enum XFlowValue {
-    String(String),
-    Integer(i32),
-    Boolean(bool),
-}
-
-graphql_union!(XFlowValue: () where Scalar = <S> |&self| {
-    instance_resolvers: |_| {
-        &String => match *self { XFlowValue::String(ref h) => Some(h), _ => None },
-        &i32 => match *self { XFlowValue::Integer(ref h) => Some(h), _ => None },
-        &bool => match *self { XFlowValue::Boolean(ref h) => Some(h), _ => None },
-    }
-});
-
-impl XFlowValue {
-    pub fn string_value(&self) -> String {
-        match *self {
-            XFlowValue::String(ref s) => s.clone(),
-            XFlowValue::Integer(ref i) => i.to_string(),
-            XFlowValue::Boolean(ref b) => {
-                if *b {
-                    "true".to_owned()
-                } else {
-                    "false".to_owned()
-                }
-            }
-        }
-    }
-}
 #[derive(GraphQLObject, Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub struct XFlowRequirement {
     pub xtype: XFlowNodeType,
     pub version: i32,
 }
 
-#[derive(GraphQLObject, Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
-pub struct XFlowVariableDefinition {
-    pub name: String,
-    pub vtype: XFlowValueType,
-}
-
-#[derive(GraphQLObject, Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
-pub struct XFlowVariable {
-    pub name: String,
-    pub vtype: XFlowValueType,
-    pub value: XFlowValue,
-}
-
-#[derive(GraphQLObject, Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
-pub struct XFlowVariables {
-    pub input: Vec<XFlowVariableDefinition>,
-    pub local: Vec<XFlowVariable>,
-    pub output: Vec<XFlowVariableDefinition>,
-}
-
 #[derive(GraphQLObject, Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 pub struct XFlowNode {
     pub id: i32,
     pub nodetype: XFlowNodeType,
+    pub position: Position,
     pub action: String,
     pub label: String,
     pub parameters: XFlowNodeParameters,
@@ -175,7 +114,7 @@ impl Default for FlowParameters {
 #[derive(GraphQLObject, Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 pub struct FloxParameters {
     pub expression: String,
-    pub returns: XFlowVariableDefinition,
+    pub returns: VariableDefinition,
 }
 
 #[derive(GraphQLObject, Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
@@ -185,7 +124,7 @@ pub struct CallParameters {}
 pub struct XFlowBranch {
     #[graphql(skip)]
     pub edge: XFlowEdge,
-    pub xvar: XFlowVariable,
+    pub xvar: VariableDefinition,
 }
 
 impl XFlow {
@@ -228,39 +167,12 @@ impl XFlow {
             .collect()
     }
 
-    /// Get a `HashSet` of all variable names in input, local and output
-    ///
-    /// # Example
-    /// ```
-    /// use gears::structure::xflow::{XFlow};
-    /// let xfs = XFlow::default();
-    /// let names = xfs.get_all_variable_names();
-    /// assert_eq!(names.len(), 0);
-    /// ```
-    pub fn all_variable_names(&self) -> HashSet<String> {
-        let mut vars = HashSet::<String>::new();
-
-        for xvar in &self.variables.input {
-            vars.insert(xvar.name.clone());
-        }
-
-        for xvar in &self.variables.local {
-            vars.insert(xvar.name.clone());
-        }
-
-        for xvar in &self.variables.output {
-            vars.insert(xvar.name.clone());
-        }
-
-        vars
-    }
-
     pub fn get_in_edges(&self, node: &XFlowNode) -> Vec<&XFlowEdge> {
 
         self.edges
             .iter()
             .filter({
-                |edge| edge.1 == node.id
+                |edge| edge.target == node.id
             })
             .collect()
     }
@@ -270,7 +182,7 @@ impl XFlow {
         self.edges
             .iter()
             .filter({
-                |edge| edge.0 == node.id
+                |edge| edge.source == node.id
             })
             .collect()
     }
@@ -280,7 +192,7 @@ impl XFlow {
         self.branches
             .iter()
             .filter({
-                |branch| edge.0 == branch.edge.0 && edge.1 == branch.edge.1
+                |branch| edge.source == branch.edge.source && edge.target == branch.edge.target
             })
             .collect()
     }
@@ -290,7 +202,7 @@ impl XFlow {
         self.branches
             .iter()
             .filter({
-                |branch| branch.edge.0 == id
+                |branch| branch.edge.source == id
             })
             .collect()
     }
@@ -330,30 +242,6 @@ impl XFlow {
             _ => None,
         }
     }
-
-    pub fn get_all_variable_names(&self) -> HashSet<String> {
-        let mut names = HashSet::<String>::new();
-
-        for xvar in &self.variables.local {
-            if !names.contains(&xvar.name) {
-                names.insert(xvar.name.clone());
-            }
-        }
-
-        for xvar in &self.variables.input {
-            if !names.contains(&xvar.name) {
-                names.insert(xvar.name.clone());
-            }
-        }
-
-        for xvar in &self.variables.output {
-            if !names.contains(&xvar.name) {
-                names.insert(xvar.name.clone());
-            }
-        }
-
-        names
-    }
 }
 
 impl Default for XFlow {
@@ -373,6 +261,10 @@ impl Default for XFlow {
             nodetype: XFlowNodeType::Flow,
             action: "start".to_owned(),
             label: "Start".to_owned(),
+            position: Position {
+                x: 0,
+                y: 0,
+            },
             parameters: XFlowNodeParameters::Flow(FlowParameters::default()),
         });
         nodes.push(XFlowNode {
@@ -380,12 +272,18 @@ impl Default for XFlow {
             nodetype: XFlowNodeType::Flow,
             action: "end".to_owned(),
             label: "End".to_owned(),
+            position: Position {
+                x: 1000,
+                y: 0,
+            },
             parameters: XFlowNodeParameters::Flow(FlowParameters::default()),
         });
 
         let mut edges = Vec::<XFlowEdge>::new();
-        // edges.push((1, 2));
-        edges.push(XFlowEdge(1, 2));
+        edges.push(XFlowEdge {
+            source: 1,
+            target: 2
+        });
 
         let mut requirements = Vec::<XFlowRequirement>::new();
         requirements.push(XFlowRequirement {
@@ -395,11 +293,7 @@ impl Default for XFlow {
 
         XFlow {
             requirements: requirements,
-            variables: XFlowVariables {
-                input: Vec::<XFlowVariableDefinition>::new(),
-                local: Vec::<XFlowVariable>::new(),
-                output: Vec::<XFlowVariableDefinition>::new(),
-            },
+            variables: DocumentVariables::default(),
             nodes: nodes,
             edges: edges,
             branches: Vec::<XFlowBranch>::new(),

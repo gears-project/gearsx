@@ -1,3 +1,20 @@
+use std::collections::{HashMap, HashSet};
+use serde_tuple::*;
+
+#[derive(GraphQLObject, Serialize_tuple, Deserialize_tuple, Debug, Clone, Eq, PartialEq)]
+pub struct Position {
+    pub x: i32,
+    pub y: i32,
+}
+
+
+#[derive(GraphQLObject, Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
+pub struct VariableDefinition {
+    pub id: i32,
+    pub name: String,
+    pub vtype: VType,
+}
+
 #[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
 #[serde(tag = "type")]
 pub enum VType {
@@ -65,7 +82,7 @@ pub struct VTypeIntegerContainer {
     pub value: i32,
 }
 
-pub trait VTypePrimitive {
+pub trait VTypeVariableDefinition {
     type Container;
     fn new_instance(&self) -> Self::Container;
     fn is_consistent(&self) -> bool {
@@ -73,7 +90,7 @@ pub trait VTypePrimitive {
     }
 }
 
-impl VTypePrimitive for VTypeString {
+impl VTypeVariableDefinition for VTypeString {
     type Container = VTypeStringContainer;
 
     fn new_instance(&self) -> Self::Container {
@@ -83,7 +100,7 @@ impl VTypePrimitive for VTypeString {
     }
 }
 
-impl VTypePrimitive for VTypeBoolean {
+impl VTypeVariableDefinition for VTypeBoolean {
     type Container = VTypeBooleanContainer;
 
     fn new_instance(&self) -> Self::Container {
@@ -93,7 +110,7 @@ impl VTypePrimitive for VTypeBoolean {
     }
 }
 
-impl VTypePrimitive for VTypeInteger {
+impl VTypeVariableDefinition for VTypeInteger {
     type Container = VTypeIntegerContainer;
 
     fn new_instance(&self) -> Self::Container {
@@ -118,10 +135,69 @@ impl VTypePrimitive for VTypeInteger {
     }
 }
 
+#[derive(GraphQLObject, Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
+pub struct DocumentVariables {
+    pub input: Vec<VariableDefinition>,
+    pub local: Vec<VariableDefinition>,
+    pub output: Vec<VariableDefinition>,
+}
+
+impl Default for DocumentVariables {
+    fn default() -> Self {
+        Self {
+            input: Vec::<VariableDefinition>::new(),
+            local: Vec::<VariableDefinition>::new(),
+            output: Vec::<VariableDefinition>::new(),
+        }
+    }
+}
+
+impl DocumentVariables {
+    pub fn get_all_ids(&self) -> HashSet<i32> {
+        let mut ids = HashSet::<i32>::new();
+
+        let _ = self.input.iter().map(|p| {
+            ids.insert(p.id)
+        });
+
+        unimplemented!();
+
+        ids
+    }
+
+//    /// Get a `HashSet` of all variable names in input, local and output
+//    ///
+//    /// # Example
+//    /// ```
+//    /// use gears::structure::xflow::{XFlow};
+//    /// let xfs = XFlow::default();
+//    /// let names = xfs.get_all_variable_names();
+//    /// assert_eq!(names.len(), 0);
+//    /// ```
+//    pub fn all_variable_names(&self) -> HashSet<String> {
+//        let mut vars = HashSet::<String>::new();
+//
+//        for xvar in &self.variables.input {
+//            vars.insert(xvar.name.clone());
+//        }
+//
+//        for xvar in &self.variables.local {
+//            vars.insert(xvar.name.clone());
+//        }
+//
+//        for xvar in &self.variables.output {
+//            vars.insert(xvar.name.clone());
+//        }
+//
+//        vars
+//    }
+
+}
+
 mod test {
     #[test]
     fn test_vtype_string() {
-        use super::VTypePrimitive;
+        use super::VTypeVariableDefinition;
         let vtype = super::VTypeString {
             default: Some((&"thing").to_string()),
         };
@@ -132,7 +208,7 @@ mod test {
 
     #[test]
     fn test_vtype_boolean() {
-        use super::VTypePrimitive;
+        use super::VTypeVariableDefinition;
         let vtype = super::VTypeBoolean {
             default: Some(true),
         };
@@ -143,7 +219,7 @@ mod test {
 
     #[test]
     fn test_vtype_integer() {
-        use super::VTypePrimitive;
+        use super::VTypeVariableDefinition;
         let vtype = super::VTypeInteger {
             default: Some(200),
             min: Some(0),
