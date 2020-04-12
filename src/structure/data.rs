@@ -7,7 +7,6 @@ pub struct Position {
     pub y: i32,
 }
 
-
 #[derive(GraphQLObject, Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub struct VariableDefinition {
     pub id: i32,
@@ -135,11 +134,13 @@ impl VTypeVariableDefinition for VTypeInteger {
     }
 }
 
+pub type VariableDefinitions = Vec<VariableDefinition>;
+
 #[derive(GraphQLObject, Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub struct DocumentVariables {
-    pub input: Vec<VariableDefinition>,
-    pub local: Vec<VariableDefinition>,
-    pub output: Vec<VariableDefinition>,
+    pub input: VariableDefinitions,
+    pub local: VariableDefinitions,
+    pub output: VariableDefinitions,
 }
 
 impl Default for DocumentVariables {

@@ -3,6 +3,7 @@ use crate::db::models::{Document as DBDocument, Project as DBProject};
 use crate::messages::*;
 use crate::structure::domain::{DomainDocument};
 use crate::structure::xflow::{XFlowDocument};
+use crate::structure::fngroup::{FngroupDocument};
 use juniper;
 use juniper::FieldResult;
 
@@ -48,6 +49,20 @@ impl QueryRoot {
     fn xflow(context: &Context, input: DocumentId) -> FieldResult<XFlowDocument> {
         let mut conn = context.dbpool.get()?;
         let doc = DBDocument::by_id(&conn, &input.document_id)?.as_xflow()?;
+        Ok(doc)
+    }
+
+    #[graphql(description = "List of all fngroup documents")]
+    fn fngroups(context: &Context, input: ProjectId) -> FieldResult<Vec<FngroupDocument>> {
+        let mut conn = context.dbpool.get()?;
+        let documents = DBDocument::find_fngroups(&conn, &input.project_id)?;
+        Ok(documents)
+    }
+
+    #[graphql(description = "Fetch a fngroup document by id")]
+    fn fngroup(context: &Context, input: DocumentId) -> FieldResult<FngroupDocument> {
+        let mut conn = context.dbpool.get()?;
+        let doc = DBDocument::by_id(&conn, &input.document_id)?.as_fngroup()?;
         Ok(doc)
     }
 

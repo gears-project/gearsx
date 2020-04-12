@@ -6,6 +6,7 @@ use crate::db::models::{Document as DocumentDAO, Project as ProjectDAO};
 use crate::messages::*;
 use crate::structure::domain::{Attribute, DomainDocument, Entity};
 use crate::structure::xflow::{XFlowDocument};
+use crate::structure::fngroup::{FngroupDocument};
 use crate::structure::modelx::ModelxDocument;
 use juniper::FieldResult;
 
@@ -44,6 +45,16 @@ impl MutationRoot {
         debug!("add_domain : {}", doc.name);
         let mut conn = context.dbpool.get()?;
         Ok(DocumentDAO::create_domain_document(
+            &conn,
+            &doc.project_id,
+            &doc.name,
+        )?)
+    }
+
+    fn add_fngroup(context: &Context, doc: NewDocument) -> FieldResult<FngroupDocument> {
+        debug!("add_fngroup : {}", doc.name);
+        let mut conn = context.dbpool.get()?;
+        Ok(DocumentDAO::create_fngroup_document(
             &conn,
             &doc.project_id,
             &doc.name,

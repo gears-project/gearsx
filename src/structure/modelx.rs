@@ -1,6 +1,7 @@
 use super::common::Document;
 use super::domain::DomainDocument;
 use super::xflow::XFlowDocument;
+use super::fngroup::FngroupDocument;
 use crate::db::models::Document as DBDocument;
 use crate::graphql::schema;
 use uuid::Uuid;
@@ -34,6 +35,12 @@ impl ModelxDocument {
         let mut conn = context.dbpool.get().unwrap();
         let xflows = DBDocument::find_xflows(&conn, &self.project_id).unwrap();
         Ok(xflows)
+    }
+
+    fn fngroups(&self, context: &schema::Context) -> juniper::FieldResult<Vec<FngroupDocument>> {
+        let mut conn = context.dbpool.get().unwrap();
+        let fngroups = DBDocument::find_fngroups(&conn, &self.project_id).unwrap();
+        Ok(fngroups)
     }
 }
 

@@ -8,6 +8,7 @@ use crate::structure::common::RawDocument;
 use crate::structure::domain::{Domain, DomainDocument};
 use crate::structure::xflow::{XFlow, XFlowDocument};
 use crate::structure::modelx::{Modelx, ModelxDocument};
+use crate::structure::fngroup::{Fngroup, FngroupDocument};
 use chrono::NaiveDateTime;
 use diesel::pg::PgConnection;
 use diesel::result::Error as DieselError;
@@ -220,6 +221,23 @@ impl Document {
         }
     }
 
+    pub fn as_fngroup(&self) -> Result<FngroupDocument, String> {
+        debug!("as_fngroup {}", &self.doctype.as_str());
+        match &self.doctype.as_str() {
+            &"fngroup" => Ok(FngroupDocument {
+                id: self.id,
+                project_id: self.project_id,
+                doctype: self.doctype.clone(),
+                name: self.name.clone(),
+                version: self.version.clone(),
+                created_at: self.created_at.clone(),
+                updated_at: self.updated_at.clone(),
+                body: serde_json::from_value::<Fngroup>(self.body.clone()).unwrap(),
+            }),
+            _ => Err("Not a fngroup document".to_owned()),
+        }
+    }
+
     pub fn as_modelx(&self) -> Result<ModelxDocument, String> {
         match &self.doctype.as_str() {
             &"modelx" => Ok(ModelxDocument {
@@ -286,6 +304,21 @@ impl Document {
         Ok(res.as_xflow().unwrap())
     }
 
+    pub fn create_fngroup_document(
+        conn: &PgConnection,
+        project_id: &Uuid,
+        name: &str,
+    ) -> Result<FngroupDocument, DieselError> {
+        let mut doc = FngroupDocument::new(&project_id, "fngroup".to_owned());
+        doc.name = name.to_owned();
+        let record = Self::from_raw(&doc.as_raw());
+
+        let res: Self = diesel::insert_into(documents::table)
+            .values(record)
+            .get_result(conn)?;
+        Ok(res.as_fngroup().unwrap())
+    }
+
     pub fn create_model_document(
         conn: &PgConnection,
         input: &crate::messages::ModelInput,
@@ -335,6 +368,19 @@ impl Document {
             .load::<Document>(conn)?
             .iter()
             .map(|res| res.as_xflow().unwrap())
+            .collect())
+    }
+
+    pub fn find_fngroups(
+        conn: &PgConnection,
+        project_id: &Uuid,
+    ) -> Result<Vec<FngroupDocument>, DieselError> {
+        Ok(documents::table
+            .filter(documents::doctype.eq(&"fngroup"))
+            .filter(documents::project_id.eq(&project_id))
+            .load::<Document>(conn)?
+            .iter()
+            .map(|res| res.as_fngroup().unwrap())
             .collect())
     }
 
