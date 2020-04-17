@@ -61,7 +61,7 @@ pub struct DocumentElementId {
 #[derive(juniper::GraphQLInputObject)]
 pub struct DocumentIdentifier {
     pub project_id: Uuid,
-    pub domain_id: Uuid,
+    pub document_id: Uuid,
 }
 
 #[derive(juniper::GraphQLInputObject)]
@@ -107,3 +107,19 @@ pub struct AddStringAttributeToEntity {
     pub name: String,
     pub default: Option<String>,
 }
+
+
+// FnGroup
+#[derive(juniper::GraphQLInputObject)]
+pub struct FnGroupFnNew {
+    pub name: String,
+}
+
+#[derive(juniper::GraphQLInputObject)]
+pub struct FnGroupFnUpdate {
+    pub id: i32,
+    pub name: Option<String>,
+    pub description: Option<String>,
+    pub body: Option<String>,
+}
+

@@ -6,7 +6,7 @@ use crate::db::models::{Document as DocumentDAO, Project as ProjectDAO};
 use crate::messages::*;
 use crate::structure::domain::{Attribute, DomainDocument, Entity};
 use crate::structure::xflow::{XFlowDocument};
-use crate::structure::fngroup::{FngroupDocument};
+use crate::structure::fngroup::{FngroupDocument, FnDefinition};
 use crate::structure::modelx::ModelxDocument;
 use juniper::FieldResult;
 
@@ -81,6 +81,16 @@ impl MutationRoot {
         Ok(entity)
     }
 
+    /*
+    fn fngroup_add_fn(context: &Context, input: FnGroupAPIAddFn) -> FieldResult<FnDefinition> {
+        let mut conn = context.dbpool.get()?;
+        let mut doc = DocumentDAO::by_id(&conn, &input.domain_id)?.as_domain()?;
+        let entity = doc.body.add_entity(&input.name)?;
+        let _ = DocumentDAO::save(&conn, &doc.as_raw());
+        Ok(entity)
+    }
+    */
+
     fn entity_add_string_attribute(
         context: &Context,
         input: AddStringAttributeToEntity,
@@ -108,4 +118,27 @@ impl MutationRoot {
         Ok(attribute)
     }
     */
+
+    fn fngroup_add_fn(context: &Context, doc: DocumentIdentifier, input: FnGroupFnNew) -> FieldResult<FnDefinition> {
+        let mut conn = context.dbpool.get()?;
+        let mut doc = DocumentDAO::by_id(&conn, &doc.document_id)?.as_fngroup()?;
+        let obj = doc.body.add_fn(&input.name)?;
+        let _ = DocumentDAO::save(&conn, &doc.as_raw());
+        Ok(obj)
+    }
+
+    fn fngroup_update_fn(
+        context: &Context,
+        doc: DocumentIdentifier,
+        input: FnGroupFnUpdate,
+    ) -> FieldResult<FnDefinition> {
+        let mut conn = context.dbpool.get()?;
+        let mut doc = DocumentDAO::by_id(&conn, &doc.document_id)?.as_fngroup()?;
+        let f = doc
+            .body
+            .update_fn(&input)?;
+        let _ = DocumentDAO::save(&conn, &doc.as_raw());
+        Ok(f)
+    }
+
 }
