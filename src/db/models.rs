@@ -22,6 +22,7 @@ pub struct NewProject {
     pub name: String,
     pub description: String,
     pub model_id: Option<Uuid>,
+    pub owner: Uuid,
 }
 
 #[derive(Serialize, Deserialize, Debug, AsChangeset, Queryable, Insertable, Identifiable)]
@@ -31,6 +32,7 @@ pub struct Project {
     pub name: String,
     pub description: String,
     pub model_id: Option<Uuid>,
+    pub owner: Uuid,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
 }
@@ -74,6 +76,7 @@ pub struct InsertDocument {
     pub name: String,
     pub doctype: String,
     pub version: i32,
+    pub owner: Uuid,
     pub body: serde_json::Value,
 }
 
@@ -86,6 +89,7 @@ pub struct Document {
     pub doctype: String,
     pub version: i32,
     pub body: serde_json::Value,
+    pub owner: Uuid,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
 }
@@ -132,12 +136,14 @@ impl Project {
 
     fn create(conn: &PgConnection, name: &str) -> Result<Project, DieselError> {
         let id = uuid::Uuid::new_v4();
+        let owner = crate::util::naming::empty_uuid();
 
         let project = NewProject {
             id: id,
             name: name.to_owned(),
             description: name.to_owned(),
             model_id: None,
+            owner: owner,
         };
 
         diesel::insert_into(projects::table)
@@ -196,6 +202,7 @@ impl Document {
                 doctype: self.doctype.clone(),
                 name: self.name.clone(),
                 version: self.version.clone(),
+                owner: self.owner,
                 created_at: self.created_at.clone(),
                 updated_at: self.updated_at.clone(),
                 body: serde_json::from_value::<Domain>(self.body.clone()).unwrap(),
@@ -213,6 +220,7 @@ impl Document {
                 doctype: self.doctype.clone(),
                 name: self.name.clone(),
                 version: self.version.clone(),
+                owner: self.owner,
                 created_at: self.created_at.clone(),
                 updated_at: self.updated_at.clone(),
                 body: serde_json::from_value::<XFlow>(self.body.clone()).unwrap(),
@@ -230,6 +238,7 @@ impl Document {
                 doctype: self.doctype.clone(),
                 name: self.name.clone(),
                 version: self.version.clone(),
+                owner: self.owner,
                 created_at: self.created_at.clone(),
                 updated_at: self.updated_at.clone(),
                 body: serde_json::from_value::<Fngroup>(self.body.clone()).unwrap(),
@@ -246,6 +255,7 @@ impl Document {
                 doctype: self.doctype.clone(),
                 name: self.name.clone(),
                 version: self.version.clone(),
+                owner: self.owner,
                 created_at: self.created_at.clone(),
                 updated_at: self.updated_at.clone(),
                 body: serde_json::from_value::<Modelx>(self.body.clone()).unwrap(),
@@ -268,6 +278,7 @@ impl Document {
             version: doc.version.to_owned(),
             name: doc.name.to_owned(),
             doctype: doc.doctype.to_owned(),
+            owner: doc.owner.to_owned(),
             updated_at: doc.updated_at.to_owned(),
             created_at: doc.created_at.to_owned(),
             body: doc.body.to_owned(),

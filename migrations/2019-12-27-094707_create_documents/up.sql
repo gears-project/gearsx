@@ -5,6 +5,7 @@ CREATE TABLE documents (
   doctype TEXT NOT NULL,
   version INTEGER NOT NULL,
   body jsonb NOT NULL,
+  owner UUID NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

@@ -3,6 +3,7 @@ CREATE TABLE projects (
   name TEXT NOT NULL,
   description TEXT NOT NULL,
   model_id UUID,
+  owner UUID NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

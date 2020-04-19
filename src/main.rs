@@ -50,6 +50,24 @@ fn main() {
 
     let _cors_route = warp::any().map(warp::reply).with(cors);
 
+    /*
+    let context_extractor = warp::any().and(
+        warp::header::<String>("authorization")
+            .map(|token: String| -> Context {
+                let token_data = match verify_jwt(token) {
+                    Ok(t) => t,
+                    Err(_) => return Context { user_id: 0 },
+                };
+    
+                Context {
+                    user_id: token_data.claims.user_id,
+                }
+            })
+            .or(warp::any().map(|| Context { user_id: 0 }))
+            .unify(),
+    );
+    */
+
     let graphql_routes = warp::get2()
         .and(warp::path("graphiql"))
         .and(juniper_warp::graphiql_filter("/graphql"))
