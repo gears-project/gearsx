@@ -14,10 +14,10 @@ pub struct MutationRoot;
 
 #[juniper::object(Context = Context)]
 impl MutationRoot {
-    fn init_new_project(context: &Context, project: ProjectInput) -> FieldResult<ProjectDAO> {
+    fn init_new_project(context: &Context, project: NewProject) -> FieldResult<ProjectDAO> {
         debug!("init_new_project : {}", project.name);
         let mut conn = context.dbpool.get()?;
-        Ok(ProjectDAO::initialize_new_project(&conn, &project.name)?)
+        Ok(ProjectDAO::initialize_new_project(&conn, &project.to_dto(&context.user))?)
     }
 
     fn update_project(context: &Context, input: CommonPropertiesUpdate) -> FieldResult<ProjectDAO> {

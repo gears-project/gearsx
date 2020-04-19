@@ -3,7 +3,8 @@ use crate::diesel::ExpressionMethods;
 use crate::diesel::QueryDsl;
 use crate::diesel::RunQueryDsl;
 use crate::graphql::schema;
-use crate::messages::{QueryPage, CommonPropertiesUpdate};
+// use crate::messages::{QueryPage, CommonPropertiesUpdate};
+use crate::messages::*;
 use crate::structure::common::RawDocument;
 use crate::structure::domain::{Domain, DomainDocument};
 use crate::structure::xflow::{XFlow, XFlowDocument};
@@ -95,20 +96,20 @@ pub struct Document {
 }
 
 impl Project {
-    pub fn initialize_new_project(conn: &PgConnection, name: &str) -> Result<Project, DieselError> {
-        debug!("initialize_new_project : {}", name);
+    pub fn initialize_new_project(conn: &PgConnection, new_project: &NewProjectDTO) -> Result<Project, DieselError> {
+        debug!("initialize_new_project : {}", new_project.name);
 
-        let mut project = Self::create(conn, &name)?;
+        let mut project = Self::create(conn, &new_project)?;
 
         debug!(
             "initialize_new_project : {} : project id : {}",
-            name, project.id
+            new_project.name, project.id
         );
 
         let model = Document::create_model_document(
             conn,
             &crate::messages::ModelInput {
-                name: name.to_string(),
+                name: new_project.name.to_string(),
                 description: None,
                 project_id: project.id,
             },
@@ -116,7 +117,7 @@ impl Project {
 
         debug!(
             "initialize_new_project : {} : model id : {}",
-            name, model.id
+            new_project.name, model.id
         );
 
         project.model_id = model.id.into();
@@ -128,22 +129,21 @@ impl Project {
         let domain = Document::create_domain_document(conn, &project.id, "Domain")?;
         debug!(
             "initialize_new_project : {} : domain id : {}",
-            name, domain.id
+            new_project.name, domain.id
         );
 
         Ok(updated_project)
     }
 
-    fn create(conn: &PgConnection, name: &str) -> Result<Project, DieselError> {
+    fn create(conn: &PgConnection, new_project: &NewProjectDTO) -> Result<Project, DieselError> {
         let id = uuid::Uuid::new_v4();
-        let owner = crate::util::naming::empty_uuid();
 
         let project = NewProject {
             id: id,
-            name: name.to_owned(),
-            description: name.to_owned(),
+            name: new_project.name.to_owned(),
+            description: new_project.description.as_ref().unwrap_or(&"".to_string()).to_owned(),
             model_id: None,
-            owner: owner,
+            owner: new_project.owner,
         };
 
         diesel::insert_into(projects::table)

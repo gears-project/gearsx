@@ -16,9 +16,25 @@ impl Default for QueryPage {
 }
 
 #[derive(juniper::GraphQLInputObject)]
-pub struct ProjectInput {
+pub struct NewProject {
     pub name: String,
     pub description: Option<String>,
+}
+
+pub struct NewProjectDTO {
+    pub name: String,
+    pub description: Option<String>,
+    pub owner: Uuid,
+}
+
+impl NewProject {
+    pub fn to_dto(&self, owner: &Uuid) -> NewProjectDTO {
+        NewProjectDTO {
+            name: self.name.to_owned(),
+            description: self.description.to_owned(),
+            owner: *owner,
+        }
+    }
 }
 
 #[derive(juniper::GraphQLInputObject)]
