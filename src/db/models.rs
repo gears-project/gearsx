@@ -108,10 +108,11 @@ impl Project {
 
         let model = Document::create_model_document(
             conn,
-            &crate::messages::ModelInput {
+            &NewDocumentDTO {
                 name: new_project.name.to_string(),
                 description: None,
                 project_id: project.id,
+                owner: new_project.owner,
             },
         )?;
 
@@ -126,7 +127,14 @@ impl Project {
             .set(&project)
             .get_result::<Project>(conn)?;
 
-        let domain = Document::create_domain_document(conn, &project.id, "Domain")?;
+        let domain = Document::create_domain_document(
+            conn,
+            &NewDocumentDTO {
+                name: "New Domain".to_string(),
+                description: None,
+                project_id: project.id,
+                owner: new_project.owner,
+            })?;
         debug!(
             "initialize_new_project : {} : domain id : {}",
             new_project.name, domain.id
@@ -287,11 +295,11 @@ impl Document {
 
     pub fn create_domain_document(
         conn: &PgConnection,
-        project_id: &Uuid,
-        name: &str,
+        new_doc: &NewDocumentDTO,
     ) -> Result<DomainDocument, DieselError> {
-        let mut doc = DomainDocument::new(&project_id, "domain".to_owned());
-        doc.name = name.to_owned();
+        let mut doc = DomainDocument::new(&new_doc.project_id, "domain".to_owned());
+        doc.name = new_doc.name.to_owned();
+        doc.owner = new_doc.owner.to_owned();
         let record = Self::from_raw(&doc.as_raw());
 
         let res: Self = diesel::insert_into(documents::table)
@@ -302,11 +310,11 @@ impl Document {
 
     pub fn create_xflow_document(
         conn: &PgConnection,
-        project_id: &Uuid,
-        name: &str,
+        new_doc: &NewDocumentDTO,
     ) -> Result<XFlowDocument, DieselError> {
-        let mut doc = XFlowDocument::new(&project_id, "xflow".to_owned());
-        doc.name = name.to_owned();
+        let mut doc = XFlowDocument::new(&new_doc.project_id, "xflow".to_owned());
+        doc.name = new_doc.name.to_owned();
+        doc.owner = new_doc.owner.to_owned();
         let record = Self::from_raw(&doc.as_raw());
 
         let res: Self = diesel::insert_into(documents::table)
@@ -317,11 +325,11 @@ impl Document {
 
     pub fn create_fngroup_document(
         conn: &PgConnection,
-        project_id: &Uuid,
-        name: &str,
+        new_doc: &NewDocumentDTO,
     ) -> Result<FngroupDocument, DieselError> {
-        let mut doc = FngroupDocument::new(&project_id, "fngroup".to_owned());
-        doc.name = name.to_owned();
+        let mut doc = FngroupDocument::new(&new_doc.project_id, "fngroup".to_owned());
+        doc.name = new_doc.name.to_owned();
+        doc.owner = new_doc.owner.to_owned();
         let record = Self::from_raw(&doc.as_raw());
 
         let res: Self = diesel::insert_into(documents::table)
@@ -332,10 +340,11 @@ impl Document {
 
     pub fn create_model_document(
         conn: &PgConnection,
-        input: &crate::messages::ModelInput,
+        new_doc: &NewDocumentDTO,
     ) -> Result<ModelxDocument, DieselError> {
-        let mut doc = ModelxDocument::new(&input.project_id, "modelx".to_owned());
-        doc.name = input.name.to_owned();
+        let mut doc = ModelxDocument::new(&new_doc.project_id, "modelx".to_owned());
+        doc.name = new_doc.name.to_owned();
+        doc.owner = new_doc.owner.to_owned();
         let record = Self::from_raw(&doc.as_raw());
 
         let res: Self = diesel::insert_into(documents::table)

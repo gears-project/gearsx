@@ -36,8 +36,7 @@ impl MutationRoot {
         let mut conn = context.dbpool.get()?;
         Ok(DocumentDAO::create_xflow_document(
             &conn,
-            &doc.project_id,
-            &doc.name,
+            &doc.to_dto(&context.user)
         )?)
     }
 
@@ -46,8 +45,7 @@ impl MutationRoot {
         let mut conn = context.dbpool.get()?;
         Ok(DocumentDAO::create_domain_document(
             &conn,
-            &doc.project_id,
-            &doc.name,
+            &doc.to_dto(&context.user)
         )?)
     }
 
@@ -56,8 +54,7 @@ impl MutationRoot {
         let mut conn = context.dbpool.get()?;
         Ok(DocumentDAO::create_fngroup_document(
             &conn,
-            &doc.project_id,
-            &doc.name,
+            &doc.to_dto(&context.user)
         )?)
     }
 
@@ -67,10 +64,10 @@ impl MutationRoot {
         Ok(input.document_id)
     }
 
-    fn add_model(context: &Context, input: ModelInput) -> FieldResult<ModelxDocument> {
-        debug!("add_model for project {}", input.project_id);
+    fn add_model(context: &Context, doc: NewDocument) -> FieldResult<ModelxDocument> {
+        debug!("add_model for project {}", doc.project_id);
         let mut conn = context.dbpool.get()?;
-        Ok(DocumentDAO::create_model_document(&conn, &input)?)
+        Ok(DocumentDAO::create_model_document(&conn, &doc.to_dto(&context.user))?)
     }
 
     fn domain_add_entity(context: &Context, input: DomainAddEntityInput) -> FieldResult<Entity> {

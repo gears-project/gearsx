@@ -38,24 +38,35 @@ impl NewProject {
 }
 
 #[derive(juniper::GraphQLInputObject)]
-pub struct CommonPropertiesUpdate {
-    pub id: Uuid,
-    pub name: String,
-    pub description: Option<String>,
-}
-
-#[derive(juniper::GraphQLInputObject)]
-pub struct ModelInput {
-    pub name: String,
-    pub description: Option<String>,
-    pub project_id: Uuid,
-}
-
-#[derive(juniper::GraphQLInputObject)]
 pub struct NewDocument {
     pub name: String,
     pub description: Option<String>,
     pub project_id: Uuid,
+}
+
+pub struct NewDocumentDTO {
+    pub name: String,
+    pub description: Option<String>,
+    pub project_id: Uuid,
+    pub owner: Uuid,
+}
+
+impl NewDocument {
+    pub fn to_dto(&self, owner: &Uuid) -> NewDocumentDTO {
+        NewDocumentDTO {
+            name: self.name.to_owned(),
+            description: self.description.to_owned(),
+            project_id: self.project_id,
+            owner: *owner,
+        }
+    }
+}
+
+#[derive(juniper::GraphQLInputObject)]
+pub struct CommonPropertiesUpdate {
+    pub id: Uuid,
+    pub name: String,
+    pub description: Option<String>,
 }
 
 #[derive(juniper::GraphQLInputObject)]
