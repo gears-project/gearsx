@@ -1,5 +1,5 @@
-use uuid::Uuid;
 use crate::db::connection::Pool;
+use uuid::Uuid;
 
 pub struct Context {
     pub dbpool: Pool,
@@ -9,11 +9,10 @@ pub struct Context {
 impl juniper::Context for Context {}
 
 impl Context {
-    pub fn new() -> Self {
+    pub fn new(uuid: &Uuid) -> Self {
         Self {
             dbpool: crate::db::connection::get_connection_pool(),
-            user: crate::util::naming::empty_uuid(),
+            user: *uuid,
         }
     }
 }
-

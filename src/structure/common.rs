@@ -33,9 +33,8 @@ pub struct RawDocument<'a> {
 #[macro_export]
 macro_rules! gears_doc {
     ($source:ty, $name:ident, $doctype:expr) => {
-
-        use uuid::Uuid;
         use chrono::NaiveDateTime;
+        use uuid::Uuid;
 
         pub type $name = Document<$source>;
 

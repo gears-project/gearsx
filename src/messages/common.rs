@@ -1,4 +1,3 @@
-
 #[derive(juniper::GraphQLInputObject)]
 pub struct QueryPage {
     pub limit: Option<i32>,

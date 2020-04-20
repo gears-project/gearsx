@@ -54,7 +54,7 @@ impl FngroupDocument {
 }
 #[derive(GraphQLEnum, Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub enum FnLanguage {
-    AssemblyScript
+    AssemblyScript,
 }
 
 #[derive(GraphQLObject, Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
@@ -84,7 +84,6 @@ impl Default for Fngroup {
 }
 
 impl Fngroup {
-
     fn next_id(&self) -> i32 {
         let mut ids = Vec::<i32>::new();
         ids.append(&mut self.fns.iter().map(|e| e.id).collect());
@@ -128,7 +127,6 @@ impl Fngroup {
             None => Err(FngroupError::FnDoesNotExist(id)),
         }
     }
-
 }
 
 #[cfg(test)]

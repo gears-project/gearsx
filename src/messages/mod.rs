@@ -122,7 +122,6 @@ pub struct AddStringAttributeToEntity {
     pub default: Option<String>,
 }
 
-
 // FnGroup
 #[derive(juniper::GraphQLInputObject)]
 pub struct FnGroupFnNew {
@@ -136,4 +135,3 @@ pub struct FnGroupFnUpdate {
     pub description: Option<String>,
     pub body: Option<String>,
 }
-

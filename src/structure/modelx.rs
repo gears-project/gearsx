@@ -1,7 +1,7 @@
 use super::common::Document;
 use super::domain::DomainDocument;
-use super::xflow::XFlowDocument;
 use super::fngroup::FngroupDocument;
+use super::xflow::XFlowDocument;
 use crate::db::models::Document as DBDocument;
 use crate::graphql;
 use uuid::Uuid;
@@ -25,19 +25,28 @@ impl ModelxDocument {
     fn body(&self) -> &Modelx {
         &self.body
     }
-    fn domains(&self, context: &graphql::context::Context) -> juniper::FieldResult<Vec<DomainDocument>> {
+    fn domains(
+        &self,
+        context: &graphql::context::Context,
+    ) -> juniper::FieldResult<Vec<DomainDocument>> {
         let mut conn = context.dbpool.get().unwrap();
         let domains = DBDocument::find_domains(&conn, &self.project_id).unwrap();
         Ok(domains)
     }
 
-    fn xflows(&self, context: &graphql::context::Context) -> juniper::FieldResult<Vec<XFlowDocument>> {
+    fn xflows(
+        &self,
+        context: &graphql::context::Context,
+    ) -> juniper::FieldResult<Vec<XFlowDocument>> {
         let mut conn = context.dbpool.get().unwrap();
         let xflows = DBDocument::find_xflows(&conn, &self.project_id).unwrap();
         Ok(xflows)
     }
 
-    fn fngroups(&self, context: &graphql::context::Context) -> juniper::FieldResult<Vec<FngroupDocument>> {
+    fn fngroups(
+        &self,
+        context: &graphql::context::Context,
+    ) -> juniper::FieldResult<Vec<FngroupDocument>> {
         let mut conn = context.dbpool.get().unwrap();
         let fngroups = DBDocument::find_fngroups(&conn, &self.project_id).unwrap();
         Ok(fngroups)

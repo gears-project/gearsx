@@ -26,7 +26,54 @@ mod util;
 use warp::{Filter, Reply};
 
 fn create_graphql_filter() -> warp::filters::BoxedFilter<(impl Reply,)> {
-    let state = warp::any().map(move || graphql::context::Context::new());
+
+    use graphql::context::Context;
+    let context_extractor = warp::any().and(
+        warp::header::<String>("authorization")
+            .map(|token: String| -> Context {
+                debug!("Token");
+                /*
+                let token_data = match verify_jwt(token) {
+                    Ok(t) => t,
+                    Err(_) => return Context { user_id: None },
+                };
+
+                Context {
+                    user_id: Some(token_data.claims.user_id),
+                }
+                */
+                Context::new(&crate::util::naming::empty_uuid())
+            })
+            .or(warp::any().map(|| Context::new(&crate::util::naming::empty_uuid())))
+            .unify(),
+    );
+
+    /*
+    let state =
+        warp::any().map(move || graphql::context::Context::new(&crate::util::naming::empty_uuid()));
+
+        let default_auth = warp::any().map(|| {
+        // something default
+    });
+
+    let auth = warp::header("authorization")
+        .map(|token: String| {
+            // something with token
+        })
+        .or(default_auth)
+        .unify();
+    */
+
+    let default_auth = warp::any().map(|| {
+        Context::new(&crate::util::naming::empty_uuid())
+    });
+    let state =
+            warp::header::<String>("authorization")
+                .map(|token: String| -> Context {
+                    Context::new(&crate::util::naming::empty_uuid())
+                })
+                .or(default_auth)
+                .unify();
     let graphql_filter =
         juniper_warp::make_graphql_filter(graphql::schema::create_schema(), state.boxed());
     let graphql_filter = warp::path("graphql").and(graphql_filter);
@@ -49,24 +96,6 @@ fn main() {
         .allow_methods(vec!["GET", "POST", "PUT", "DELETE"]);
 
     let _cors_route = warp::any().map(warp::reply).with(cors);
-
-    /*
-    let context_extractor = warp::any().and(
-        warp::header::<String>("authorization")
-            .map(|token: String| -> Context {
-                let token_data = match verify_jwt(token) {
-                    Ok(t) => t,
-                    Err(_) => return Context { user_id: 0 },
-                };
-    
-                Context {
-                    user_id: token_data.claims.user_id,
-                }
-            })
-            .or(warp::any().map(|| Context { user_id: 0 }))
-            .unify(),
-    );
-    */
 
     let graphql_routes = warp::get2()
         .and(warp::path("graphiql"))

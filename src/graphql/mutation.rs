@@ -1,14 +1,14 @@
 use juniper;
 
 use super::context::Context;
-use uuid::Uuid;
 use crate::db::models::{Document as DocumentDAO, Project as ProjectDAO};
 use crate::messages::*;
 use crate::structure::domain::{Attribute, DomainDocument, Entity};
-use crate::structure::xflow::{XFlowDocument};
-use crate::structure::fngroup::{FngroupDocument, FnDefinition};
+use crate::structure::fngroup::{FnDefinition, FngroupDocument};
 use crate::structure::modelx::ModelxDocument;
+use crate::structure::xflow::XFlowDocument;
 use juniper::FieldResult;
+use uuid::Uuid;
 
 pub struct MutationRoot;
 
@@ -17,7 +17,10 @@ impl MutationRoot {
     fn init_new_project(context: &Context, project: NewProject) -> FieldResult<ProjectDAO> {
         debug!("init_new_project : {}", project.name);
         let mut conn = context.dbpool.get()?;
-        Ok(ProjectDAO::initialize_new_project(&conn, &project.to_dto(&context.user))?)
+        Ok(ProjectDAO::initialize_new_project(
+            &conn,
+            &project.to_dto(&context.user),
+        )?)
     }
 
     fn update_project(context: &Context, input: CommonPropertiesUpdate) -> FieldResult<ProjectDAO> {
@@ -36,7 +39,7 @@ impl MutationRoot {
         let mut conn = context.dbpool.get()?;
         Ok(DocumentDAO::create_xflow_document(
             &conn,
-            &doc.to_dto(&context.user)
+            &doc.to_dto(&context.user),
         )?)
     }
 
@@ -45,7 +48,7 @@ impl MutationRoot {
         let mut conn = context.dbpool.get()?;
         Ok(DocumentDAO::create_domain_document(
             &conn,
-            &doc.to_dto(&context.user)
+            &doc.to_dto(&context.user),
         )?)
     }
 
@@ -54,7 +57,7 @@ impl MutationRoot {
         let mut conn = context.dbpool.get()?;
         Ok(DocumentDAO::create_fngroup_document(
             &conn,
-            &doc.to_dto(&context.user)
+            &doc.to_dto(&context.user),
         )?)
     }
 
@@ -67,7 +70,10 @@ impl MutationRoot {
     fn add_model(context: &Context, doc: NewDocument) -> FieldResult<ModelxDocument> {
         debug!("add_model for project {}", doc.project_id);
         let mut conn = context.dbpool.get()?;
-        Ok(DocumentDAO::create_model_document(&conn, &doc.to_dto(&context.user))?)
+        Ok(DocumentDAO::create_model_document(
+            &conn,
+            &doc.to_dto(&context.user),
+        )?)
     }
 
     fn domain_add_entity(context: &Context, input: DomainAddEntityInput) -> FieldResult<Entity> {
@@ -116,7 +122,11 @@ impl MutationRoot {
     }
     */
 
-    fn fngroup_add_fn(context: &Context, doc: DocumentIdentifier, input: FnGroupFnNew) -> FieldResult<FnDefinition> {
+    fn fngroup_add_fn(
+        context: &Context,
+        doc: DocumentIdentifier,
+        input: FnGroupFnNew,
+    ) -> FieldResult<FnDefinition> {
         let mut conn = context.dbpool.get()?;
         let mut doc = DocumentDAO::by_id(&conn, &doc.document_id)?.as_fngroup()?;
         let obj = doc.body.add_fn(&input.name)?;
@@ -131,11 +141,8 @@ impl MutationRoot {
     ) -> FieldResult<FnDefinition> {
         let mut conn = context.dbpool.get()?;
         let mut doc = DocumentDAO::by_id(&conn, &doc.document_id)?.as_fngroup()?;
-        let f = doc
-            .body
-            .update_fn(&input)?;
+        let f = doc.body.update_fn(&input)?;
         let _ = DocumentDAO::save(&conn, &doc.as_raw());
         Ok(f)
     }
-
 }

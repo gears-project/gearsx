@@ -1,10 +1,10 @@
 use super::context::Context;
 use crate::db::models::{Document as DBDocument, Project as DBProject};
+use crate::messages::common::QueryPage;
 use crate::messages::*;
-use crate::messages::common::{QueryPage};
-use crate::structure::domain::{DomainDocument};
-use crate::structure::xflow::{XFlowDocument};
-use crate::structure::fngroup::{FngroupDocument};
+use crate::structure::domain::DomainDocument;
+use crate::structure::fngroup::FngroupDocument;
+use crate::structure::xflow::XFlowDocument;
 use juniper;
 use juniper::FieldResult;
 
@@ -66,5 +66,4 @@ impl QueryRoot {
         let doc = DBDocument::by_id(&conn, &input.document_id)?.as_fngroup()?;
         Ok(doc)
     }
-
 }

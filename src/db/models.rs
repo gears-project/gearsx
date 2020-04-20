@@ -3,13 +3,13 @@ use crate::diesel::ExpressionMethods;
 use crate::diesel::QueryDsl;
 use crate::diesel::RunQueryDsl;
 use crate::graphql;
+use crate::messages::common::QueryPage;
 use crate::messages::*;
-use crate::messages::common::{QueryPage};
 use crate::structure::common::RawDocument;
 use crate::structure::domain::{Domain, DomainDocument};
-use crate::structure::xflow::{XFlow, XFlowDocument};
-use crate::structure::modelx::{Modelx, ModelxDocument};
 use crate::structure::fngroup::{Fngroup, FngroupDocument};
+use crate::structure::modelx::{Modelx, ModelxDocument};
+use crate::structure::xflow::{XFlow, XFlowDocument};
 use chrono::NaiveDateTime;
 use diesel::pg::PgConnection;
 use diesel::result::Error as DieselError;
@@ -59,7 +59,10 @@ impl Project {
         self.updated_at
     }
 
-    fn model(&self, context: &graphql::context::Context) -> juniper::FieldResult<Option<ModelxDocument>> {
+    fn model(
+        &self,
+        context: &graphql::context::Context,
+    ) -> juniper::FieldResult<Option<ModelxDocument>> {
         let mut conn = context.dbpool.get()?;
         if let Some(id) = &self.model_id {
             Ok(Some(Document::by_id(&conn, id)?.as_modelx()?))
@@ -96,7 +99,10 @@ pub struct Document {
 }
 
 impl Project {
-    pub fn initialize_new_project(conn: &PgConnection, new_project: &NewProjectDTO) -> Result<Project, DieselError> {
+    pub fn initialize_new_project(
+        conn: &PgConnection,
+        new_project: &NewProjectDTO,
+    ) -> Result<Project, DieselError> {
         debug!("initialize_new_project : {}", new_project.name);
 
         let mut project = Self::create(conn, &new_project)?;
@@ -134,7 +140,8 @@ impl Project {
                 description: None,
                 project_id: project.id,
                 owner: new_project.owner,
-            })?;
+            },
+        )?;
         debug!(
             "initialize_new_project : {} : domain id : {}",
             new_project.name, domain.id
@@ -149,7 +156,11 @@ impl Project {
         let project = NewProject {
             id: id,
             name: new_project.name.to_owned(),
-            description: new_project.description.as_ref().unwrap_or(&"".to_string()).to_owned(),
+            description: new_project
+                .description
+                .as_ref()
+                .unwrap_or(&"".to_string())
+                .to_owned(),
             model_id: None,
             owner: new_project.owner,
         };
@@ -163,7 +174,10 @@ impl Project {
         projects::table.find(id).first::<Project>(conn)
     }
 
-    pub fn update_project(conn: &PgConnection, input: CommonPropertiesUpdate) -> Result<Project, DieselError> {
+    pub fn update_project(
+        conn: &PgConnection,
+        input: CommonPropertiesUpdate,
+    ) -> Result<Project, DieselError> {
         let mut project = Self::by_id(conn, &input.id)?;
         project.name = input.name;
         if let Some(description) = input.description {

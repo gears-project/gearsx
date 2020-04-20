@@ -1,5 +1,5 @@
-use std::collections::{HashMap, HashSet};
 use serde_tuple::*;
+use std::collections::{HashMap, HashSet};
 
 #[derive(GraphQLObject, Serialize_tuple, Deserialize_tuple, Debug, Clone, Eq, PartialEq)]
 pub struct Position {
@@ -157,42 +157,39 @@ impl DocumentVariables {
     pub fn get_all_ids(&self) -> HashSet<i32> {
         let mut ids = HashSet::<i32>::new();
 
-        let _ = self.input.iter().map(|p| {
-            ids.insert(p.id)
-        });
+        let _ = self.input.iter().map(|p| ids.insert(p.id));
 
         unimplemented!();
 
         ids
     }
 
-//    /// Get a `HashSet` of all variable names in input, local and output
-//    ///
-//    /// # Example
-//    /// ```
-//    /// use gears::structure::xflow::{XFlow};
-//    /// let xfs = XFlow::default();
-//    /// let names = xfs.get_all_variable_names();
-//    /// assert_eq!(names.len(), 0);
-//    /// ```
-//    pub fn all_variable_names(&self) -> HashSet<String> {
-//        let mut vars = HashSet::<String>::new();
-//
-//        for xvar in &self.variables.input {
-//            vars.insert(xvar.name.clone());
-//        }
-//
-//        for xvar in &self.variables.local {
-//            vars.insert(xvar.name.clone());
-//        }
-//
-//        for xvar in &self.variables.output {
-//            vars.insert(xvar.name.clone());
-//        }
-//
-//        vars
-//    }
-
+    //    /// Get a `HashSet` of all variable names in input, local and output
+    //    ///
+    //    /// # Example
+    //    /// ```
+    //    /// use gears::structure::xflow::{XFlow};
+    //    /// let xfs = XFlow::default();
+    //    /// let names = xfs.get_all_variable_names();
+    //    /// assert_eq!(names.len(), 0);
+    //    /// ```
+    //    pub fn all_variable_names(&self) -> HashSet<String> {
+    //        let mut vars = HashSet::<String>::new();
+    //
+    //        for xvar in &self.variables.input {
+    //            vars.insert(xvar.name.clone());
+    //        }
+    //
+    //        for xvar in &self.variables.local {
+    //            vars.insert(xvar.name.clone());
+    //        }
+    //
+    //        for xvar in &self.variables.output {
+    //            vars.insert(xvar.name.clone());
+    //        }
+    //
+    //        vars
+    //    }
 }
 
 mod test {

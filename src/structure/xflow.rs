@@ -1,10 +1,10 @@
 #[macro_use]
 use crate as root;
+use super::data::{DocumentVariables, Position, VariableDefinition};
 use serde_tuple::*;
 use std::collections::HashSet;
-use super::data::{DocumentVariables, VariableDefinition, Position};
 
-use super::common::{Document};
+use super::common::Document;
 
 root::gears_doc!(XFlow, XFlowDocument, xflow);
 
@@ -138,14 +138,10 @@ impl XFlow {
     /// assert_eq!(nodes.len(), 1);
     /// ```
     pub fn get_nodes_by(&self, nodetype: &XFlowNodeType, action: &str) -> Vec<&XFlowNode> {
-
         self.nodes
             .iter()
-            .filter({
-                |node| node.nodetype == *nodetype && node.action == action
-            })
+            .filter({ |node| node.nodetype == *nodetype && node.action == action })
             .collect()
-
     }
 
     /// Get `XFlowNode`s of `nodetype`
@@ -158,37 +154,27 @@ impl XFlow {
     /// assert_eq!(nodes.len(), 2);
     /// ```
     pub fn get_nodes_of_type(&self, nodetype: &XFlowNodeType) -> Vec<&XFlowNode> {
-
         self.nodes
             .iter()
-            .filter({
-                |node| node.nodetype == *nodetype
-            })
+            .filter({ |node| node.nodetype == *nodetype })
             .collect()
     }
 
     pub fn get_in_edges(&self, node: &XFlowNode) -> Vec<&XFlowEdge> {
-
         self.edges
             .iter()
-            .filter({
-                |edge| edge.target == node.id
-            })
+            .filter({ |edge| edge.target == node.id })
             .collect()
     }
 
     pub fn get_out_edges(&self, node: &XFlowNode) -> Vec<&XFlowEdge> {
-
         self.edges
             .iter()
-            .filter({
-                |edge| edge.source == node.id
-            })
+            .filter({ |edge| edge.source == node.id })
             .collect()
     }
 
     pub fn get_branches_for(&self, edge: &XFlowEdge) -> Vec<&XFlowBranch> {
-
         self.branches
             .iter()
             .filter({
@@ -198,12 +184,9 @@ impl XFlow {
     }
 
     pub fn get_out_branches(&self, id: i32) -> Vec<&XFlowBranch> {
-
         self.branches
             .iter()
-            .filter({
-                |branch| branch.edge.source == id
-            })
+            .filter({ |branch| branch.edge.source == id })
             .collect()
     }
 
@@ -225,20 +208,13 @@ impl XFlow {
     }
 
     pub fn get_node_id(&self, id: i32) -> Option<&XFlowNode> {
-        let nodes: Vec<&XFlowNode> = self.nodes
-            .iter()
-            .filter({
-                |node| node.id == id
-            })
-            .collect();
+        let nodes: Vec<&XFlowNode> = self.nodes.iter().filter({ |node| node.id == id }).collect();
 
         match nodes.len() {
-            1 => {
-                match nodes.first() {
-                    Some(node) => Some(node),
-                    None => None,
-                }
-            }
+            1 => match nodes.first() {
+                Some(node) => Some(node),
+                None => None,
+            },
             _ => None,
         }
     }
@@ -254,17 +230,13 @@ impl Default for XFlow {
     /// println!("XFlow has {} requirements", xfs.requirements.len());
     /// ```
     fn default() -> Self {
-
         let mut nodes = Vec::<XFlowNode>::new();
         nodes.push(XFlowNode {
             id: 1,
             nodetype: XFlowNodeType::Flow,
             action: "start".to_owned(),
             label: "Start".to_owned(),
-            position: Position {
-                x: 0,
-                y: 0,
-            },
+            position: Position { x: 0, y: 0 },
             parameters: XFlowNodeParameters::Flow(FlowParameters::default()),
         });
         nodes.push(XFlowNode {
@@ -272,17 +244,14 @@ impl Default for XFlow {
             nodetype: XFlowNodeType::Flow,
             action: "end".to_owned(),
             label: "End".to_owned(),
-            position: Position {
-                x: 1000,
-                y: 0,
-            },
+            position: Position { x: 1000, y: 0 },
             parameters: XFlowNodeParameters::Flow(FlowParameters::default()),
         });
 
         let mut edges = Vec::<XFlowEdge>::new();
         edges.push(XFlowEdge {
             source: 1,
-            target: 2
+            target: 2,
         });
 
         let mut requirements = Vec::<XFlowRequirement>::new();
@@ -300,4 +269,3 @@ impl Default for XFlow {
         }
     }
 }
-
