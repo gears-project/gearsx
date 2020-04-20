@@ -2,7 +2,7 @@ use super::schema::{documents, projects};
 use crate::diesel::ExpressionMethods;
 use crate::diesel::QueryDsl;
 use crate::diesel::RunQueryDsl;
-use crate::graphql::schema;
+use crate::graphql;
 use crate::messages::*;
 use crate::messages::common::{QueryPage};
 use crate::structure::common::RawDocument;
@@ -38,7 +38,7 @@ pub struct Project {
     pub updated_at: NaiveDateTime,
 }
 
-#[juniper::object(Context = schema::Context)]
+#[juniper::object(Context = graphql::context::Context)]
 impl Project {
     fn id(&self) -> &Uuid {
         &self.id
@@ -59,7 +59,7 @@ impl Project {
         self.updated_at
     }
 
-    fn model(&self, context: &schema::Context) -> juniper::FieldResult<Option<ModelxDocument>> {
+    fn model(&self, context: &graphql::context::Context) -> juniper::FieldResult<Option<ModelxDocument>> {
         let mut conn = context.dbpool.get()?;
         if let Some(id) = &self.model_id {
             Ok(Some(Document::by_id(&conn, id)?.as_modelx()?))

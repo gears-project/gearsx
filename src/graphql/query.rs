@@ -1,4 +1,4 @@
-use super::schema::Context;
+use super::context::Context;
 use crate::db::models::{Document as DBDocument, Project as DBProject};
 use crate::messages::*;
 use crate::messages::common::{QueryPage};

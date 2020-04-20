@@ -1,6 +1,6 @@
 use juniper;
 
-use super::schema::Context;
+use super::context::Context;
 use uuid::Uuid;
 use crate::db::models::{Document as DocumentDAO, Project as ProjectDAO};
 use crate::messages::*;

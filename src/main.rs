@@ -26,7 +26,7 @@ mod util;
 use warp::{Filter, Reply};
 
 fn create_graphql_filter() -> warp::filters::BoxedFilter<(impl Reply,)> {
-    let state = warp::any().map(move || graphql::schema::Context::new());
+    let state = warp::any().map(move || graphql::context::Context::new());
     let graphql_filter =
         juniper_warp::make_graphql_filter(graphql::schema::create_schema(), state.boxed());
     let graphql_filter = warp::path("graphql").and(graphql_filter);
