@@ -1,6 +1,7 @@
 use super::schema::Context;
 use crate::db::models::{Document as DBDocument, Project as DBProject};
 use crate::messages::*;
+use crate::messages::common::{QueryPage};
 use crate::structure::domain::{DomainDocument};
 use crate::structure::xflow::{XFlowDocument};
 use crate::structure::fngroup::{FngroupDocument};
